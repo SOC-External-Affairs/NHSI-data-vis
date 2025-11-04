@@ -1,0 +1,221 @@
+<div class="wrap">
+    <h1>{{ page_title }}</h1>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .postbox {
+            border: 1px solid #c3c4c7;
+            background: #fff;
+            border-radius: 4px;
+            box-shadow: 0 1px 1px rgba(0,0,0,.04);
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .report-section {
+            width: 33.33%;
+            margin-bottom: 20px;
+            display: inline-block;
+            vertical-align: top;
+            padding: 0 10px;
+            box-sizing: border-box;
+        }
+        .reports-container {
+            display: block;
+        }
+    </style>
+
+    <div class="reports-container">
+        <!-- Students by Cell Phone -->
+        <div class="report-section">
+            <h3>Students by Cell Phone</h3>
+            <div class="postbox">
+                <div class="inside">
+                    {% if reports.area_codes %}
+                        <canvas id="cellChart" width="300" height="200"></canvas>
+                        <table class="wp-list-table widefat striped">
+                            <thead>
+                                <tr>
+                                    <th>Cell Phone</th>
+                                    <th>Count</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for cell in reports.area_codes %}
+                                    <tr>
+                                        <td>{{ cell.student_cell }}</td>
+                                        <td><strong>{{ cell.count }}</strong></td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    {% else %}
+                        <p>No cell phone data available.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- International Students by Country -->
+        <div class="report-section">
+            <h3>International Students by Country</h3>
+            <div class="postbox">
+                <div class="inside">
+                    {% if reports.countries %}
+                        <canvas id="countryChart" width="300" height="200"></canvas>
+                        <table class="wp-list-table widefat striped">
+                            <thead>
+                                <tr>
+                                    <th>Country</th>
+                                    <th>Count</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for country in reports.countries %}
+                                    <tr>
+                                        <td>{{ country.home_country }}</td>
+                                        <td><strong>{{ country.count }}</strong></td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    {% else %}
+                        <p>No international student data available.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Domestic Students by State -->
+        <div class="report-section">
+            <h3>Domestic Students by State</h3>
+            <div class="postbox">
+                <div class="inside">
+                    {% if reports.states %}
+                        <canvas id="stateChart" width="300" height="200"></canvas>
+                        <table class="wp-list-table widefat striped">
+                            <thead>
+                                <tr>
+                                    <th>State</th>
+                                    <th>Count</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for state in reports.states %}
+                                    <tr>
+                                        <td>{{ state.home_state }}</td>
+                                        <td><strong>{{ state.count }}</strong></td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    {% else %}
+                        <p>No state data available.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Domestic Students by Zip Code -->
+    <div class="report-section">
+        <h3>Domestic Students by Zip Code</h3>
+        <div class="postbox">
+            <div class="inside">
+                {% if reports.zip_codes %}
+                    <canvas id="zipChart" width="300" height="200"></canvas>
+                    <table class="wp-list-table widefat striped">
+                        <thead>
+                            <tr>
+                                <th>Zip Code</th>
+                                <th>Count</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for zip in reports.zip_codes %}
+                                <tr>
+                                    <td>{{ zip.zip_code }}</td>
+                                    <td><strong>{{ zip.count }}</strong></td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% else %}
+                    <p>No zip code data available.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+{% if reports.area_codes %}
+{% set top6 = reports.area_codes[:6] %}
+{% set others = reports.area_codes[6:] %}
+{% set otherCount = 0 %}
+{% for other in others %}{% set otherCount = otherCount + other.count %}{% endfor %}
+new Chart(document.getElementById('cellChart'), {
+    type: 'pie',
+    data: {
+        labels: [{% for cell in top6 %}'{{ cell.student_cell }}'{% if not loop.last %},{% endif %}{% endfor %}{% if otherCount > 0 %},'Other'{% endif %}],
+        datasets: [{
+            data: [{% for cell in top6 %}{{ cell.count }}{% if not loop.last %},{% endif %}{% endfor %}{% if otherCount > 0 %},{{ otherCount }}{% endif %}],
+            backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40', '#C9CBCF']
+        }]
+    },
+    options: { responsive: true, maintainAspectRatio: false }
+});
+{% endif %}
+
+{% if reports.countries %}
+{% set top6 = reports.countries[:6] %}
+{% set others = reports.countries[6:] %}
+{% set otherCount = 0 %}
+{% for other in others %}{% set otherCount = otherCount + other.count %}{% endfor %}
+new Chart(document.getElementById('countryChart'), {
+    type: 'pie',
+    data: {
+        labels: [{% for country in top6 %}'{{ country.home_country }}'{% if not loop.last %},{% endif %}{% endfor %}{% if otherCount > 0 %},'Other'{% endif %}],
+        datasets: [{
+            data: [{% for country in top6 %}{{ country.count }}{% if not loop.last %},{% endif %}{% endfor %}{% if otherCount > 0 %},{{ otherCount }}{% endif %}],
+            backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40', '#C9CBCF']
+        }]
+    },
+    options: { responsive: true, maintainAspectRatio: false }
+});
+{% endif %}
+
+{% if reports.states %}
+{% set top6 = reports.states[:6] %}
+{% set others = reports.states[6:] %}
+{% set otherCount = 0 %}
+{% for other in others %}{% set otherCount = otherCount + other.count %}{% endfor %}
+new Chart(document.getElementById('stateChart'), {
+    type: 'pie',
+    data: {
+        labels: [{% for state in top6 %}'{{ state.home_state }}'{% if not loop.last %},{% endif %}{% endfor %}{% if otherCount > 0 %},'Other'{% endif %}],
+        datasets: [{
+            data: [{% for state in top6 %}{{ state.count }}{% if not loop.last %},{% endif %}{% endfor %}{% if otherCount > 0 %},{{ otherCount }}{% endif %}],
+            backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40', '#C9CBCF']
+        }]
+    },
+    options: { responsive: true, maintainAspectRatio: false }
+});
+{% endif %}
+
+{% if reports.zip_codes %}
+{% set top6 = reports.zip_codes[:6] %}
+{% set others = reports.zip_codes[6:] %}
+{% set otherCount = 0 %}
+{% for other in others %}{% set otherCount = otherCount + other.count %}{% endfor %}
+new Chart(document.getElementById('zipChart'), {
+    type: 'pie',
+    data: {
+        labels: [{% for zip in top6 %}'{{ zip.zip_code }}'{% if not loop.last %},{% endif %}{% endfor %}{% if otherCount > 0 %},'Other'{% endif %}],
+        datasets: [{
+            data: [{% for zip in top6 %}{{ zip.count }}{% if not loop.last %},{% endif %}{% endfor %}{% if otherCount > 0 %},{{ otherCount }}{% endif %}],
+            backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40', '#C9CBCF']
+        }]
+    },
+    options: { responsive: true, maintainAspectRatio: false }
+});
+{% endif %}
+</script>

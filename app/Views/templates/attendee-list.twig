@@ -1,0 +1,89 @@
+<div class="wrap">
+    <h1>{{ page_title }}</h1>
+
+    {% if _GET.deleted %}
+        <div class="notice notice-success is-dismissible">
+            <p>{{ _GET.deleted }} attendee records deleted successfully!</p>
+        </div>
+    {% endif %}
+
+    {% if attendees %}
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <p><strong>Total Records:</strong> {{ attendees|length }}</p>
+            <form method="post" action="{{ delete_all_url }}" onsubmit="return confirm('Are you sure you want to delete ALL attendee records? This cannot be undone!')" style="margin: 0;">
+                {{ delete_nonce|raw }}
+                <input type="hidden" name="action" value="delete_all_attendees">
+                <button type="submit" class="button button-secondary" style="background: #dc3232; color: white; border-color: #dc3232;">Delete All Records</button>
+            </form>
+        </div>
+        
+        <div style="overflow-x: auto;">
+            <table class="wp-list-table widefat striped">
+                <thead>
+                    <tr>
+                        <th><a href="?page=attendee-records&sort=id&order={{ _GET.sort == 'id' and _GET.order == 'asc' ? 'desc' : 'asc' }}" style="text-decoration: none; color: inherit;">ID {{ _GET.sort == 'id' ? (_GET.order == 'asc' ? '↑' : '↓') : '' }}</a></th>
+                        <th><a href="?page=attendee-records&sort=division&order={{ _GET.sort == 'division' and _GET.order == 'asc' ? 'desc' : 'asc' }}" style="text-decoration: none; color: inherit;">Division {{ _GET.sort == 'division' ? (_GET.order == 'asc' ? '↑' : '↓') : '' }}</a></th>
+                        <th><a href="?page=attendee-records&sort=concentration&order={{ _GET.sort == 'concentration' and _GET.order == 'asc' ? 'desc' : 'asc' }}" style="text-decoration: none; color: inherit;">Concentration {{ _GET.sort == 'concentration' ? (_GET.order == 'asc' ? '↑' : '↓') : '' }}</a></th>
+                        <th><a href="?page=attendee-records&sort=year_attended&order={{ _GET.sort == 'year_attended' and _GET.order == 'asc' ? 'desc' : 'asc' }}" style="text-decoration: none; color: inherit;">Year {{ _GET.sort == 'year_attended' ? (_GET.order == 'asc' ? '↑' : '↓') : '' }}</a></th>
+                        <th><a href="?page=attendee-records&sort=netid&order={{ _GET.sort == 'netid' and _GET.order == 'asc' ? 'desc' : 'asc' }}" style="text-decoration: none; color: inherit;">NetID {{ _GET.sort == 'netid' ? (_GET.order == 'asc' ? '↑' : '↓') : '' }}</a></th>
+                        <th><a href="?page=attendee-records&sort=last_name&order={{ _GET.sort == 'last_name' and _GET.order == 'asc' ? 'desc' : 'asc' }}" style="text-decoration: none; color: inherit;">Last Name {{ _GET.sort == 'last_name' ? (_GET.order == 'asc' ? '↑' : '↓') : '' }}</a></th>
+                        <th><a href="?page=attendee-records&sort=preferred_first&order={{ _GET.sort == 'preferred_first' and _GET.order == 'asc' ? 'desc' : 'asc' }}" style="text-decoration: none; color: inherit;">Preferred First {{ _GET.sort == 'preferred_first' ? (_GET.order == 'asc' ? '↑' : '↓') : '' }}</a></th>
+                        <th><a href="?page=attendee-records&sort=legal_first&order={{ _GET.sort == 'legal_first' and _GET.order == 'asc' ? 'desc' : 'asc' }}" style="text-decoration: none; color: inherit;">Legal First {{ _GET.sort == 'legal_first' ? (_GET.order == 'asc' ? '↑' : '↓') : '' }}</a></th>
+                        <th><a href="?page=attendee-records&sort=gender&order={{ _GET.sort == 'gender' and _GET.order == 'asc' ? 'desc' : 'asc' }}" style="text-decoration: none; color: inherit;">Gender {{ _GET.sort == 'gender' ? (_GET.order == 'asc' ? '↑' : '↓') : '' }}</a></th>
+                        <th><a href="?page=attendee-records&sort=pronouns&order={{ _GET.sort == 'pronouns' and _GET.order == 'asc' ? 'desc' : 'asc' }}" style="text-decoration: none; color: inherit;">Pronouns {{ _GET.sort == 'pronouns' ? (_GET.order == 'asc' ? '↑' : '↓') : '' }}</a></th>
+                        <th><a href="?page=attendee-records&sort=email&order={{ _GET.sort == 'email' and _GET.order == 'asc' ? 'desc' : 'asc' }}" style="text-decoration: none; color: inherit;">Email {{ _GET.sort == 'email' ? (_GET.order == 'asc' ? '↑' : '↓') : '' }}</a></th>
+                        <th><a href="?page=attendee-records&sort=student_cell&order={{ _GET.sort == 'student_cell' and _GET.order == 'asc' ? 'desc' : 'asc' }}" style="text-decoration: none; color: inherit;">Cell {{ _GET.sort == 'student_cell' ? (_GET.order == 'asc' ? '↑' : '↓') : '' }}</a></th>
+                        <th><a href="?page=attendee-records&sort=hometown&order={{ _GET.sort == 'hometown' and _GET.order == 'asc' ? 'desc' : 'asc' }}" style="text-decoration: none; color: inherit;">Hometown {{ _GET.sort == 'hometown' ? (_GET.order == 'asc' ? '↑' : '↓') : '' }}</a></th>
+                        <th><a href="?page=attendee-records&sort=home_state&order={{ _GET.sort == 'home_state' and _GET.order == 'asc' ? 'desc' : 'asc' }}" style="text-decoration: none; color: inherit;">State {{ _GET.sort == 'home_state' ? (_GET.order == 'asc' ? '↑' : '↓') : '' }}</a></th>
+                        <th><a href="?page=attendee-records&sort=home_country&order={{ _GET.sort == 'home_country' and _GET.order == 'asc' ? 'desc' : 'asc' }}" style="text-decoration: none; color: inherit;">Country {{ _GET.sort == 'home_country' ? (_GET.order == 'asc' ? '↑' : '↓') : '' }}</a></th>
+                        <th><a href="?page=attendee-records&sort=zip_code&order={{ _GET.sort == 'zip_code' and _GET.order == 'asc' ? 'desc' : 'asc' }}" style="text-decoration: none; color: inherit;">Zip {{ _GET.sort == 'zip_code' ? (_GET.order == 'asc' ? '↑' : '↓') : '' }}</a></th>
+                        <th><a href="?page=attendee-records&sort=nu_student&order={{ _GET.sort == 'nu_student' and _GET.order == 'asc' ? 'desc' : 'asc' }}" style="text-decoration: none; color: inherit;">NU Student {{ _GET.sort == 'nu_student' ? (_GET.order == 'asc' ? '↑' : '↓') : '' }}</a></th>
+                        <th><a href="?page=attendee-records&sort=nu_grad_year&order={{ _GET.sort == 'nu_grad_year' and _GET.order == 'asc' ? 'desc' : 'asc' }}" style="text-decoration: none; color: inherit;">NU Grad Year {{ _GET.sort == 'nu_grad_year' ? (_GET.order == 'asc' ? '↑' : '↓') : '' }}</a></th>
+                        <th><a href="?page=attendee-records&sort=primary_school&order={{ _GET.sort == 'primary_school' and _GET.order == 'asc' ? 'desc' : 'asc' }}" style="text-decoration: none; color: inherit;">Primary School {{ _GET.sort == 'primary_school' ? (_GET.order == 'asc' ? '↑' : '↓') : '' }}</a></th>
+                        <th><a href="?page=attendee-records&sort=primary_major&order={{ _GET.sort == 'primary_major' and _GET.order == 'asc' ? 'desc' : 'asc' }}" style="text-decoration: none; color: inherit;">Primary Major {{ _GET.sort == 'primary_major' ? (_GET.order == 'asc' ? '↑' : '↓') : '' }}</a></th>
+                        <th><a href="?page=attendee-records&sort=created_at&order={{ _GET.sort == 'created_at' and _GET.order == 'asc' ? 'desc' : 'asc' }}" style="text-decoration: none; color: inherit;">Created {{ _GET.sort == 'created_at' ? (_GET.order == 'asc' ? '↑' : '↓') : '' }}</a></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for attendee in attendees %}
+                        <tr>
+                            <td>{{ attendee.id }}</td>
+                            <td>{{ attendee.division }}</td>
+                            <td>{{ attendee.concentration }}</td>
+                            <td>{{ attendee.year_attended }}</td>
+                            <td>{{ attendee.netid }}</td>
+                            <td>{{ attendee.last_name }}</td>
+                            <td>{{ attendee.preferred_first }}</td>
+                            <td>{{ attendee.legal_first }}</td>
+                            <td>{{ attendee.gender }}</td>
+                            <td>{{ attendee.pronouns }}</td>
+                            <td>{{ attendee.email }}</td>
+                            <td>{{ attendee.student_cell }}</td>
+                            <td>{{ attendee.hometown }}</td>
+                            <td>{{ attendee.home_state }}</td>
+                            <td>{{ attendee.home_country }}</td>
+                            <td>{{ attendee.zip_code }}</td>
+                            <td>{{ attendee.nu_student }}</td>
+                            <td>{{ attendee.nu_grad_year }}</td>
+                            <td>{{ attendee.primary_school }}</td>
+                            <td>{{ attendee.primary_major }}</td>
+                            <td>{{ attendee.created_at }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <p>No attendee records found.</p>
+        {% if debug_info %}
+            <div style="background: #f1f1f1; padding: 10px; margin: 10px 0; border-left: 4px solid #0073aa;">
+                <strong>Debug Info:</strong><br>
+                Table exists: {{ debug_info.exists ? 'Yes' : 'No' }}<br>
+                Record count: {{ debug_info.count }}<br>
+                {% if debug_info.error %}
+                    Error: {{ debug_info.error }}
+                {% endif %}
+            </div>
+        {% endif %}
+    {% endif %}
+</div>

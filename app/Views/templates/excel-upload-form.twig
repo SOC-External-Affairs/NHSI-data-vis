@@ -1,0 +1,84 @@
+<div class="wrap">
+    <h1>{{ page_title }}</h1>
+    
+    {% if success %}
+        <div class="notice notice-success is-dismissible">
+            <p>Excel file uploaded and parsed successfully!</p>
+        </div>
+    {% endif %}
+    
+    {% if error %}
+        <div class="notice notice-error is-dismissible">
+            <p>{{ error_message }}</p>
+        </div>
+    {% endif %}
+
+    <form method="post" action="{{ admin_post_url }}" enctype="multipart/form-data">
+        {{ nonce_field|raw }}
+        <input type="hidden" name="action" value="excel_upload">
+        
+        <table class="form-table">
+            <tr>
+                <th scope="row">
+                    <label for="excel_file">Excel File</label>
+                </th>
+                <td>
+                    <input type="file" name="excel_file" id="excel_file" accept=".xlsx,.xls" required>
+                    <p class="description">Upload an Excel file (.xlsx or .xls format)</p>
+                </td>
+            </tr>
+            <tr>
+                <th scope="row">
+                    <label for="subdue_sensitive">Privacy Options</label>
+                </th>
+                <td>
+                    <input type="checkbox" name="subdue_sensitive" id="subdue_sensitive" value="checked" checked disabled>                   
+                     <p class="description">
+                        For privacy protection, the following data will be modified:
+                        <ul>
+                            <li>Removes last name</li>
+                            <li>Changes phone numbers to area code only</li>
+                            <li>Removes street address</li>
+                            <li>Remove the handle from an email address and only shows the domain</li>
+                        </ul>
+                    </p>
+                </td>
+            </tr>
+        </table>
+        
+        {{ submit_button|raw }}
+    </form>
+
+    {% if data %}
+        <h2>Parsed Data Preview</h2>
+        <div style="max-height: 400px; overflow-y: auto; border: 1px solid #ddd; padding: 10px;">
+            <table class="wp-list-table widefat fixed striped">
+                <thead>
+                    <tr>
+                        {% for header in headers %}
+                            <th>{{ header }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in data|slice(0, 10) %}
+                        <tr>
+                            {% for cell in row %}
+                                <td>{{ cell }}</td>
+                            {% endfor %}
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% if data|length > 10 %}
+                <p><em>Showing first 10 rows of {{ data|length }} total rows.</em></p>
+            {% endif %}
+        </div>
+        
+        <p><strong>Total rows parsed:</strong> {{ data|length }}</p>
+        
+        {% if analytics %}
+            {% include 'student-analytics.twig' with {'analytics': analytics} %}
+        {% endif %}
+    {% endif %}
+</div>

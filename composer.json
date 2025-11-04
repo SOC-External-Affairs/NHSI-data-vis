@@ -1,0 +1,15 @@
+{
+  "name": "your-vendor/excel-uploader",
+  "description": "Boilerplate for excel-uploader",
+  "type": "wordpress-plugin",
+  "autoload": {
+    "psr-4": {
+      "ExcelUploader\\": "app/"
+    }
+  },
+  "require": {
+    "phpoffice/phpspreadsheet": "^5.2",
+    "twig/twig": "^3.22",
+    "symfony/var-dumper": "^7.3"
+  }
+}

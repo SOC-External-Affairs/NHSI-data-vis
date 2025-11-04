@@ -1,0 +1,53 @@
+<div class="wrap">
+    <h1>{{ page_title }}</h1>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    {% include 'report-styles.twig' %}
+
+    <div class="postbox">
+        <div class="inside">
+            {% if data %}
+                <div class="chart-container">
+                    <canvas id="zipChart"></canvas>
+                </div>
+                <table class="wp-list-table widefat striped">
+                    <thead>
+                        <tr>
+                            <th>Zip Code</th>
+                            <th>Count</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for zip in data %}
+                            <tr>
+                                <td>{{ zip.zip_code }}</td>
+                                <td><strong>{{ zip.count }}</strong></td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <p>No zip code data available.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+{% if data %}
+{% set top6 = data[:6] %}
+{% set others = data[6:] %}
+{% set otherCount = 0 %}
+{% for other in others %}{% set otherCount = otherCount + other.count %}{% endfor %}
+new Chart(document.getElementById('zipChart'), {
+    type: 'pie',
+    data: {
+        labels: [{% for zip in top6 %}'{{ zip.zip_code }}'{% if not loop.last %},{% endif %}{% endfor %}{% if otherCount > 0 %},'Other'{% endif %}],
+        datasets: [{
+            data: [{% for zip in top6 %}{{ zip.count }}{% if not loop.last %},{% endif %}{% endfor %}{% if otherCount > 0 %},{{ otherCount }}{% endif %}],
+            backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40', '#C9CBCF']
+        }]
+    },
+    options: { responsive: true, maintainAspectRatio: false }
+});
+{% endif %}
+</script>
