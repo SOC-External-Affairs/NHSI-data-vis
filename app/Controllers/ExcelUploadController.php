@@ -67,8 +67,10 @@ class ExcelUploadController {
             exit;
         }
 
+        $temp_file = $_FILES['excel_file']['tmp_name'];
+        
         try {
-            $spreadsheet = IOFactory::load($_FILES['excel_file']['tmp_name']);
+            $spreadsheet = IOFactory::load($temp_file);
             $worksheet = $spreadsheet->getActiveSheet();
             $rows = $worksheet->toArray();
 
@@ -82,7 +84,17 @@ class ExcelUploadController {
             foreach ($rows as $row) {
                 if (empty($row) || count($row) != count($headers)) continue;
                 
-                $rowData = array_combine($headers, $row);
+                // Filter out excluded columns
+                $filteredRow = [];
+                $filteredHeaders = [];
+                for ($i = 0; $i < count($headers); $i++) {
+                    if ($headers[$i] !== null) {
+                        $filteredHeaders[] = $headers[$i];
+                        $filteredRow[] = $row[$i] ?? '';
+                    }
+                }
+                
+                $rowData = array_combine($filteredHeaders, $filteredRow);
                 
                 // ALWAYS apply sensitive information subduing
                 $rowData = $this->subdue_sensitive_data($rowData);
@@ -93,17 +105,27 @@ class ExcelUploadController {
                 }
             }
 
+            // Securely delete the uploaded file
+            if (file_exists($temp_file)) {
+                unlink($temp_file);
+            }
+            
             wp_redirect(admin_url('admin.php?page=excel-uploader-dashboard-menu&success=1&count=' . $saved_count));
             exit;
 
         } catch (Exception $e) {
+            // Securely delete the uploaded file even on error
+            if (file_exists($temp_file)) {
+                unlink($temp_file);
+            }
+            
             wp_redirect(admin_url('admin.php?page=excel-uploader-dashboard-menu&error=2'));
             exit;
         }
     }
 
     /**
-     * Apply privacy protection by redacting sensitive information
+     * Apply privacy protection by redacting sensitive information. This is designed to limit any personal data. 
      * @param array $rowData Row data from Excel file
      * @return array Processed row data with sensitive information redacted
      */
@@ -136,8 +158,12 @@ class ExcelUploadController {
                 $parts = explode('@', $value);
                 $domain = $parts[1];
                 $rowData[$key] = '[REDACTED]@' . $domain;
-            }                        
+            }
 
+            // Clean NetID - keep numbers, replace letters with "xxx"
+            if (stripos($key, 'netid') !== false) {
+                $rowData[$key] = preg_replace('/[a-zA-Z]+/', 'xxx', $value);
+            }
 
             // Process addresses - be more aggressive
             if (stripos($key, 'address') !== false || stripos($key, 'street') !== false || stripos($key, 'addr') !== false) {
@@ -160,11 +186,27 @@ class ExcelUploadController {
      */
     private function standardize_headers($headers) {
         $standardized = [];
+        
+        // Columns to exclude for privacy/security
+        $excluded_columns = [
+            'ssn', 'social_security', 'social_security_number',
+            'full_address', 'street_address', 'home_address',
+            'personal_phone', 'home_phone', 'parent_phone',
+            'financial_aid', 'tuition', 'scholarship',
+            'medical', 'health', 'disability'
+        ];
+        
         foreach ($headers as $header) {
             $clean = trim(strtolower($header));
             $clean = preg_replace('/[^a-z0-9]/', '_', $clean);
             $clean = preg_replace('/_+/', '_', $clean);
             $clean = trim($clean, '_');
+            
+            // Skip excluded columns
+            if (in_array($clean, $excluded_columns)) {
+                $standardized[] = null;
+                continue;
+            }
             
             // Map Excel columns to database fields
             $mappings = [
