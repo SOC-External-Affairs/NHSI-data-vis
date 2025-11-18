@@ -3,6 +3,12 @@
 if ( ! defined('ABSPATH')) {
     exit;
 }
+
+// Ensure WordPress functions are available
+if ( ! function_exists('add_action') ) {
+    exit;
+}
+
 /**
  * WordPress - Excel Uploader
  *
