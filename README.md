@@ -90,6 +90,7 @@ These columns will be completely ignored during import:
    - Domestic Students by State
    - Students by Zip Code
    - Students by Primary Major
+5. Check for duplicate records using **Check Duplicates** menu
 
 ## Security Features
 

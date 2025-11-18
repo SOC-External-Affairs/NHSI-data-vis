@@ -1,0 +1,63 @@
+<div class="wrap">
+    <h1>{{ page_title }}</h1>
+    {% include 'report-styles.twig' %}
+
+    <div class="postbox">
+        <div class="inside">
+            {% if duplicates %}
+                <div class="notice notice-warning">
+                    <p><strong>Found {{ duplicates|length }} potential duplicate groups.</strong> Review these records carefully.</p>
+                </div>
+                
+                <table class="wp-list-table widefat striped">
+                    <thead>
+                        <tr>
+                            <th>Match Type</th>
+                            <th>Record IDs</th>
+                            <th>Count</th>
+                            <th>Email</th>
+                            <th>NetID</th>
+                            <th>Name</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for duplicate in duplicates %}
+                            <tr class="duplicate-row">
+                                <td>
+                                    <span class="match-type match-{{ duplicate.match_type }}">
+                                        {{ duplicate.match_type|upper }}
+                                    </span>
+                                </td>
+                                <td>{{ duplicate.ids }}</td>
+                                <td><strong>{{ duplicate.duplicate_count }}</strong></td>
+                                <td>{{ duplicate.email ?: 'N/A' }}</td>
+                                <td>{{ duplicate.netid ?: 'N/A' }}</td>
+                                <td>{{ duplicate.preferred_first ?: duplicate.legal_first }} {{ duplicate.last_name }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <div class="notice notice-success">
+                    <p><strong>No duplicates found!</strong> All records appear to be unique.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+.duplicate-row {
+    background-color: #fff3cd;
+}
+.match-type {
+    padding: 3px 8px;
+    border-radius: 3px;
+    font-size: 11px;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+.match-email { background-color: #d4edda; color: #155724; }
+.match-netid { background-color: #cce5ff; color: #004085; }
+.match-name { background-color: #f8d7da; color: #721c24; }
+</style>

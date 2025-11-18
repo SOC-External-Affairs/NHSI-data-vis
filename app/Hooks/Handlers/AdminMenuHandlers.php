@@ -98,6 +98,15 @@ class AdminMenuHandlers {
             "major-report",
             [$this, 'render_major_report']
         );
+        
+        add_submenu_page(
+            "excel-uploader-dashboard-menu",
+            __("Check Duplicates","excel-uploader"),
+            __("Check Duplicates","excel-uploader"),
+            "manage_options",
+            "duplicate-checker",
+            [$this, 'render_duplicate_checker']
+        );
     }
 
     public function tranpr_get_menu_icon()
@@ -141,6 +150,11 @@ class AdminMenuHandlers {
     public function render_major_report() {
         $controller = new \ExcelUploader\Controllers\ReportsController();
         $controller->render_major_report();
+    }
+    
+    public function render_duplicate_checker() {
+        $controller = new \ExcelUploader\Controllers\DuplicateController();
+        $controller->render_duplicate_checker();
     }
 
     public function suitepress_plugins_names_enqueue_assets() {

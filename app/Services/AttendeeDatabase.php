@@ -157,4 +157,37 @@ class AttendeeDatabase {
         $table_name = $wpdb->prefix . 'attendee_records';
         return $wpdb->get_results("SELECT primary_major, COUNT(*) as count FROM $table_name WHERE primary_major IS NOT NULL AND primary_major != '' GROUP BY primary_major ORDER BY count DESC LIMIT 20");
     }
+    
+    // Find duplicate records across multiple identifying fields
+    // Checks: email, netid, name, birthday, phone, zip, year
+    public function find_duplicates() {
+        global $wpdb;
+        $table_name = $wpdb->prefix . 'attendee_records';
+        
+        $sql = "SELECT 
+            GROUP_CONCAT(id) as ids,
+            email, netid, preferred_first, legal_first, last_name, birthday, student_cell, zip_code, year_attended,
+            COUNT(*) as duplicate_count,
+            'multi-field' as match_type
+        FROM $table_name 
+        WHERE (email IS NOT NULL AND email != '' AND email != '[REDACTED]@domain.com')
+            OR (netid IS NOT NULL AND netid != '')
+            OR (preferred_first IS NOT NULL AND preferred_first != '' AND last_name IS NOT NULL AND last_name != '' AND last_name != '[REDACTED]')
+            OR (birthday IS NOT NULL)
+            OR (student_cell IS NOT NULL AND student_cell != '')
+            OR (zip_code IS NOT NULL AND zip_code != '')
+            OR (year_attended IS NOT NULL AND year_attended != '')
+        GROUP BY 
+            COALESCE(NULLIF(email, ''), NULLIF(email, '[REDACTED]@domain.com')),
+            COALESCE(NULLIF(netid, ''), ''),
+            CONCAT(COALESCE(NULLIF(preferred_first, ''), ''), '|', COALESCE(NULLIF(last_name, ''), NULLIF(last_name, '[REDACTED]'), '')),
+            COALESCE(birthday, '0000-00-00'),
+            COALESCE(NULLIF(student_cell, ''), ''),
+            COALESCE(NULLIF(zip_code, ''), ''),
+            COALESCE(NULLIF(year_attended, ''), '')
+        HAVING COUNT(*) > 1
+        ORDER BY duplicate_count DESC";
+        
+        return $wpdb->get_results($sql);
+    }
 }
