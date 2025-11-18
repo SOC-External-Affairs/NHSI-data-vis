@@ -11,7 +11,7 @@ if ( ! defined('ABSPATH')) {
  * Description:         Upload and parse Excel files into multi-dimensional PHP arrays
  * Version:             1.1.1
  * Requires at least:   5.2
- * Requires PHP:        7.2
+ * Requires PHP:        8.2
  * Contributor:         Contributor according to the WordPress.org
  * Author:              Plugin_Author
  * Author URI:          https://suitepress.org/excel-uploader

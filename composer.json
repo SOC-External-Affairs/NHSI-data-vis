@@ -8,8 +8,9 @@
     }
   },
   "require": {
-    "phpoffice/phpspreadsheet": "^5.2",
-    "twig/twig": "^3.22",
-    "symfony/var-dumper": "^7.3"
+    "php": ">=7.4",
+    "phpoffice/phpspreadsheet": "^1.29",
+    "twig/twig": "^3.0",
+    "symfony/var-dumper": "^6.0"
   }
 }
