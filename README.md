@@ -84,13 +84,20 @@ These columns will be completely ignored during import:
 1. Navigate to **Excel Uploader** in WordPress admin menu
 2. Upload your Excel file (.xlsx, .xls formats supported)
 3. Review imported data with automatic privacy protection applied
-4. Generate reports from **Reports** submenu:
+4. **Search Records**: Use search fields to filter by:
+   - First Name (searches both preferred and legal first names)
+   - NetID Numbers (numerical values only)
+5. **Manage Records**:
+   - Sort by any column (click column headers)
+   - Delete individual records (red Delete button with confirmation)
+   - Delete all records (bulk delete with confirmation)
+6. Generate reports from **Reports** submenu:
    - Students by Cell Phone (Area Code)
    - International Students by Country
    - Domestic Students by State
    - Students by Zip Code
    - Students by Primary Major
-5. Check for duplicate records using **Check Duplicates** menu
+7. Check for duplicate records using **Check Duplicates** menu
 
 ## Security Features
 
@@ -98,4 +105,7 @@ These columns will be completely ignored during import:
 - **Column Exclusion**: High-risk columns completely filtered out
 - **Secure File Deletion**: Uploaded files removed after processing
 - **Access Control**: Admin-only functionality
-- **Nonce Protection**: CSRF protection on all forms
+- **CSRF Protection**: Unique nonces for all forms and delete actions
+- **Input Validation**: Search parameters sanitized and length-limited
+- **SQL Injection Prevention**: Parameterized queries for all database operations
+- **XSS Protection**: Output escaping in templates
