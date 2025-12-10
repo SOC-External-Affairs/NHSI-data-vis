@@ -31,6 +31,8 @@ Your Excel file should contain student attendee data with these supported column
 - `Primary School` - Primary school attended
 - `Primary Major Enrollment` - Major field of study
 
+![Pie chart by country](./app/vanity-images/pie%20chart%20by%20country.png)
+
 ### Privacy-Protected Columns:
 These columns will be automatically redacted or excluded:
 - Last names → `[REDACTED]`
