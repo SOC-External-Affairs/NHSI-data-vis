@@ -10,6 +10,7 @@ A WordPress plugin for securely importing and analyzing student attendee data fr
 - **Column Filtering**: Excludes sensitive columns (SSN, financial data, medical info) during import
 - **Secure File Handling**: Uploaded files are automatically deleted after processing
 
+![Student count by state over the years](./app/vanity-images/student%20count%20by%20state%20and%20year.png)
 ## Expected Excel File Format
 
 Your Excel file should contain student attendee data with these supported columns:
