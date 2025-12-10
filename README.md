@@ -50,9 +50,7 @@ These columns will be completely ignored during import:
 
 - **WordPress**: 5.0+
 - **PHP**: 7.4+
-- **Node.js**: Version `18`
 - **Composer**: Installed globally
-- **NPM**: Installed globally
 
 ## Installation Steps
 
@@ -66,16 +64,7 @@ These columns will be completely ignored during import:
    composer dump-autoload
    ```
 
-3. **Install Node modules**  
-   ```terminal
-   npm install
-   ```
-
-4. **Configure Vite Development URL**
-    - Open `vite.config.js` and update the `root` and `devServer` URL as needed
-    - Update the dev server URL in `app/Hooks/Handlers/AdminMenuHandlers.php` to match your local Vite server (e.g., `http://localhost:5173`)
-
-5. **Activate Plugin**
+3. **Activate Plugin**
    - Upload to WordPress plugins directory
    - Activate through WordPress admin panel
 
