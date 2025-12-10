@@ -83,4 +83,76 @@ class ReportsController {
         
         echo $renderer->render('major-report.twig', $templateData);
     }
+    
+    /**
+     * Render state trends by year report
+     */
+    public function render_state_trends_report() {
+        $renderer = new TwigRenderer();
+        $attendeeDb = new AttendeeDatabase();
+        
+        $rawData = $attendeeDb->get_state_trends_by_year();
+        
+        // Process data for chart
+        $years = [];
+        $states = [];
+        $chartData = [];
+        
+        foreach ($rawData as $row) {
+            $years[$row->year_attended] = true;
+            $states[$row->home_state] = true;
+            $chartData[$row->home_state][$row->year_attended] = $row->count;
+        }
+        
+        $years = array_keys($years);
+        $states = array_keys($states);
+        sort($years);
+        sort($states);
+        
+        $templateData = [
+            'page_title' => 'State Trends by Year',
+            'data' => $rawData,
+            'years' => $years,
+            'states' => $states,
+            'chartData' => $chartData
+        ];
+        
+        echo $renderer->render('state-trends-report.twig', $templateData);
+    }
+    
+    /**
+     * Render country trends by year report
+     */
+    public function render_country_trends_report() {
+        $renderer = new TwigRenderer();
+        $attendeeDb = new AttendeeDatabase();
+        
+        $rawData = $attendeeDb->get_country_trends_by_year();
+        
+        // Process data for chart
+        $years = [];
+        $countries = [];
+        $chartData = [];
+        
+        foreach ($rawData as $row) {
+            $years[$row->year_attended] = true;
+            $countries[$row->home_country] = true;
+            $chartData[$row->home_country][$row->year_attended] = $row->count;
+        }
+        
+        $years = array_keys($years);
+        $countries = array_keys($countries);
+        sort($years);
+        sort($countries);
+        
+        $templateData = [
+            'page_title' => 'Country Trends by Year',
+            'data' => $rawData,
+            'years' => $years,
+            'countries' => $countries,
+            'chartData' => $chartData
+        ];
+        
+        echo $renderer->render('country-trends-report.twig', $templateData);
+    }
 }

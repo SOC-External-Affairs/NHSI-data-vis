@@ -176,6 +176,18 @@ class AttendeeDatabase {
         return $wpdb->get_results("SELECT primary_major, COUNT(*) as count FROM $table_name WHERE primary_major IS NOT NULL AND primary_major != '' GROUP BY primary_major ORDER BY count DESC LIMIT 20");
     }
     
+    public function get_state_trends_by_year() {
+        global $wpdb;
+        $table_name = $wpdb->prefix . 'attendee_records';
+        return $wpdb->get_results("SELECT home_state, year_attended, COUNT(*) as count FROM $table_name WHERE (home_country LIKE '%United States%' OR home_country LIKE '%USA%' OR home_country LIKE '%US%' OR home_country = '' OR home_country IS NULL) AND home_state IS NOT NULL AND home_state != '' AND year_attended IS NOT NULL AND year_attended != '' GROUP BY home_state, year_attended ORDER BY year_attended, home_state");
+    }
+    
+    public function get_country_trends_by_year() {
+        global $wpdb;
+        $table_name = $wpdb->prefix . 'attendee_records';
+        return $wpdb->get_results("SELECT home_country, year_attended, COUNT(*) as count FROM $table_name WHERE home_country IS NOT NULL AND home_country != '' AND year_attended IS NOT NULL AND year_attended != '' GROUP BY home_country, year_attended ORDER BY year_attended, home_country");
+    }
+    
     // Find duplicate records across multiple identifying fields
     // Checks: email, netid, name, birthday, phone, zip, year
     public function find_duplicates() {

@@ -101,6 +101,24 @@ class AdminMenuHandlers {
         
         add_submenu_page(
             "excel-uploader-dashboard-menu",
+            __("State Trends by Year","excel-uploader"),
+            __("State Trends by Year","excel-uploader"),
+            "manage_options",
+            "state-trends-report",
+            [$this, 'render_state_trends_report']
+        );
+        
+        add_submenu_page(
+            "excel-uploader-dashboard-menu",
+            __("Country Trends by Year","excel-uploader"),
+            __("Country Trends by Year","excel-uploader"),
+            "manage_options",
+            "country-trends-report",
+            [$this, 'render_country_trends_report']
+        );
+        
+        add_submenu_page(
+            "excel-uploader-dashboard-menu",
             __("Check Duplicates","excel-uploader"),
             __("Check Duplicates","excel-uploader"),
             "manage_options",
@@ -155,6 +173,16 @@ class AdminMenuHandlers {
     public function render_duplicate_checker() {
         $controller = new \ExcelUploader\Controllers\DuplicateController();
         $controller->render_duplicate_checker();
+    }
+    
+    public function render_state_trends_report() {
+        $controller = new \ExcelUploader\Controllers\ReportsController();
+        $controller->render_state_trends_report();
+    }
+    
+    public function render_country_trends_report() {
+        $controller = new \ExcelUploader\Controllers\ReportsController();
+        $controller->render_country_trends_report();
     }
 
     public function suitepress_plugins_names_enqueue_assets() {
