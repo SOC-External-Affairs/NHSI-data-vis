@@ -89,7 +89,7 @@ class AttendeeDatabase {
         return $result;
     }
     
-    public function get_all_attendees($sort = 'created_at', $order = 'desc') {
+    public function get_all_attendees($sort = 'created_at', $order = 'desc', $search_first_name = '', $search_netid = '') {
         global $wpdb;
         $table_name = $wpdb->prefix . 'attendee_records';
         
@@ -99,7 +99,19 @@ class AttendeeDatabase {
         $sort = in_array($sort, $allowed_columns) ? $sort : 'created_at';
         $order = in_array($order, $allowed_orders) ? strtoupper($order) : 'DESC';
         
-        $sql = "SELECT * FROM $table_name ORDER BY $sort $order";
+        $where_conditions = [];
+        
+        if (!empty($search_first_name) && strlen($search_first_name) <= 100) {
+            $where_conditions[] = $wpdb->prepare("(preferred_first LIKE %s OR legal_first LIKE %s)", '%' . $search_first_name . '%', '%' . $search_first_name . '%');
+        }
+        
+        if (!empty($search_netid) && strlen($search_netid) <= 20 && preg_match('/^[0-9]+$/', $search_netid)) {
+            $where_conditions[] = $wpdb->prepare("netid REGEXP %s", $search_netid);
+        }
+        
+        $where_clause = !empty($where_conditions) ? 'WHERE ' . implode(' AND ', $where_conditions) : '';
+        
+        $sql = "SELECT * FROM $table_name $where_clause ORDER BY $sort $order";
         return $wpdb->get_results($sql);
     }
 

@@ -25,8 +25,10 @@ class AttendeeCrudController {
         
         $sort = $_GET['sort'] ?? 'created_at';
         $order = $_GET['order'] ?? 'desc';
+        $search_first_name = sanitize_text_field($_GET['search_first_name'] ?? '');
+        $search_netid = sanitize_text_field($_GET['search_netid'] ?? '');
         
-        $attendees = $attendeeDb->get_all_attendees($sort, $order);
+        $attendees = $attendeeDb->get_all_attendees($sort, $order, $search_first_name, $search_netid);
         $debug_info = $attendeeDb->debug_table_status();
         
         $templateData = [
@@ -34,7 +36,9 @@ class AttendeeCrudController {
             'attendees' => $attendees,
             'debug_info' => $debug_info,
             'delete_all_url' => admin_url('admin-post.php'),
-            'delete_nonce' => wp_nonce_field('delete_all_nonce', '_wpnonce', true, false)
+            'delete_nonce' => wp_nonce_field('delete_all_nonce', '_wpnonce', true, false),
+            'search_first_name' => $search_first_name,
+            'search_netid' => $search_netid
         ];
         
         echo $renderer->render('attendee-list.twig', $templateData);

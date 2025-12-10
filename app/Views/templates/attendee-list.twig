@@ -7,7 +7,26 @@
         </div>
     {% endif %}
 
+    <form method="get" style="background: #f9f9f9; padding: 15px; margin-bottom: 15px; border: 1px solid #ddd;">
+        <input type="hidden" name="page" value="attendee-records">
+        <div style="display: flex; gap: 15px; align-items: center;">
+            <div>
+                <label for="search_first_name">First Name:</label>
+                <input type="text" id="search_first_name" name="search_first_name" value="{{ search_first_name|e('html_attr') }}" placeholder="Search first name..." style="margin-left: 5px;" maxlength="100">
+            </div>
+            <div>
+                <label for="search_netid">NetID Numbers:</label>
+                <input type="text" id="search_netid" name="search_netid" value="{{ search_netid|e('html_attr') }}" placeholder="Search NetID numbers..." style="margin-left: 5px;" maxlength="20" pattern="[0-9]*">
+            </div>
+            <button type="submit" class="button button-primary">Search</button>
+            {% if search_first_name or search_netid %}
+                <a href="?page=attendee-records" class="button">Clear</a>
+            {% endif %}
+        </div>
+    </form>
+
     {% if attendees %}
+        
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
             <p><strong>Total Records:</strong> {{ attendees|length }}</p>
             <form method="post" action="{{ delete_all_url }}" onsubmit="return confirm('Are you sure you want to delete ALL attendee records? This cannot be undone!')" style="margin: 0;">
@@ -21,11 +40,11 @@
             <table class="wp-list-table widefat striped">
                 <thead>
                     <tr>
-                        <th><a href="?page=attendee-records&sort=id&order={{ _GET.sort == 'id' and _GET.order == 'asc' ? 'desc' : 'asc' }}" style="text-decoration: none; color: inherit;">ID {{ _GET.sort == 'id' ? (_GET.order == 'asc' ? '↑' : '↓') : '' }}</a></th>
-                        <th><a href="?page=attendee-records&sort=division&order={{ _GET.sort == 'division' and _GET.order == 'asc' ? 'desc' : 'asc' }}" style="text-decoration: none; color: inherit;">Division {{ _GET.sort == 'division' ? (_GET.order == 'asc' ? '↑' : '↓') : '' }}</a></th>
-                        <th><a href="?page=attendee-records&sort=concentration&order={{ _GET.sort == 'concentration' and _GET.order == 'asc' ? 'desc' : 'asc' }}" style="text-decoration: none; color: inherit;">Concentration {{ _GET.sort == 'concentration' ? (_GET.order == 'asc' ? '↑' : '↓') : '' }}</a></th>
-                        <th><a href="?page=attendee-records&sort=year_attended&order={{ _GET.sort == 'year_attended' and _GET.order == 'asc' ? 'desc' : 'asc' }}" style="text-decoration: none; color: inherit;">Year {{ _GET.sort == 'year_attended' ? (_GET.order == 'asc' ? '↑' : '↓') : '' }}</a></th>
-                        <th><a href="?page=attendee-records&sort=netid&order={{ _GET.sort == 'netid' and _GET.order == 'asc' ? 'desc' : 'asc' }}" style="text-decoration: none; color: inherit;">NetID {{ _GET.sort == 'netid' ? (_GET.order == 'asc' ? '↑' : '↓') : '' }}</a></th>
+                        <th><a href="?page=attendee-records&sort=id&order={{ _GET.sort == 'id' and _GET.order == 'asc' ? 'desc' : 'asc' }}{% if search_first_name %}&search_first_name={{ search_first_name }}{% endif %}{% if search_netid %}&search_netid={{ search_netid }}{% endif %}" style="text-decoration: none; color: inherit;">ID {{ _GET.sort == 'id' ? (_GET.order == 'asc' ? '↑' : '↓') : '' }}</a></th>
+                        <th><a href="?page=attendee-records&sort=division&order={{ _GET.sort == 'division' and _GET.order == 'asc' ? 'desc' : 'asc' }}{% if search_first_name %}&search_first_name={{ search_first_name }}{% endif %}{% if search_netid %}&search_netid={{ search_netid }}{% endif %}" style="text-decoration: none; color: inherit;">Division {{ _GET.sort == 'division' ? (_GET.order == 'asc' ? '↑' : '↓') : '' }}</a></th>
+                        <th><a href="?page=attendee-records&sort=concentration&order={{ _GET.sort == 'concentration' and _GET.order == 'asc' ? 'desc' : 'asc' }}{% if search_first_name %}&search_first_name={{ search_first_name }}{% endif %}{% if search_netid %}&search_netid={{ search_netid }}{% endif %}" style="text-decoration: none; color: inherit;">Concentration {{ _GET.sort == 'concentration' ? (_GET.order == 'asc' ? '↑' : '↓') : '' }}</a></th>
+                        <th><a href="?page=attendee-records&sort=year_attended&order={{ _GET.sort == 'year_attended' and _GET.order == 'asc' ? 'desc' : 'asc' }}{% if search_first_name %}&search_first_name={{ search_first_name }}{% endif %}{% if search_netid %}&search_netid={{ search_netid }}{% endif %}" style="text-decoration: none; color: inherit;">Year {{ _GET.sort == 'year_attended' ? (_GET.order == 'asc' ? '↑' : '↓') : '' }}</a></th>
+                        <th><a href="?page=attendee-records&sort=netid&order={{ _GET.sort == 'netid' and _GET.order == 'asc' ? 'desc' : 'asc' }}{% if search_first_name %}&search_first_name={{ search_first_name }}{% endif %}{% if search_netid %}&search_netid={{ search_netid }}{% endif %}" style="text-decoration: none; color: inherit;">NetID {{ _GET.sort == 'netid' ? (_GET.order == 'asc' ? '↑' : '↓') : '' }}</a></th>
                         <th><a href="?page=attendee-records&sort=last_name&order={{ _GET.sort == 'last_name' and _GET.order == 'asc' ? 'desc' : 'asc' }}" style="text-decoration: none; color: inherit;">Last Name {{ _GET.sort == 'last_name' ? (_GET.order == 'asc' ? '↑' : '↓') : '' }}</a></th>
                         <th><a href="?page=attendee-records&sort=preferred_first&order={{ _GET.sort == 'preferred_first' and _GET.order == 'asc' ? 'desc' : 'asc' }}" style="text-decoration: none; color: inherit;">Preferred First {{ _GET.sort == 'preferred_first' ? (_GET.order == 'asc' ? '↑' : '↓') : '' }}</a></th>
                         <th><a href="?page=attendee-records&sort=legal_first&order={{ _GET.sort == 'legal_first' and _GET.order == 'asc' ? 'desc' : 'asc' }}" style="text-decoration: none; color: inherit;">Legal First {{ _GET.sort == 'legal_first' ? (_GET.order == 'asc' ? '↑' : '↓') : '' }}</a></th>
@@ -74,7 +93,11 @@
             </table>
         </div>
     {% else %}
-        <p>No attendee records found.</p>
+        {% if search_first_name or search_netid %}
+            <p>No attendee records found matching your search criteria.</p>
+        {% else %}
+            <p>No attendee records found.</p>
+        {% endif %}
         {% if debug_info %}
             <div style="background: #f1f1f1; padding: 10px; margin: 10px 0; border-left: 4px solid #0073aa;">
                 <strong>Debug Info:</strong><br>
