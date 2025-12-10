@@ -122,6 +122,12 @@ class AttendeeDatabase {
         $wpdb->query("TRUNCATE TABLE $table_name");
         return $count;
     }
+
+    public function delete_attendee($id) {
+        global $wpdb;
+        $table_name = $wpdb->prefix . 'attendee_records';
+        return $wpdb->delete($table_name, ['id' => intval($id)], ['%d']);
+    }
     
     public function debug_table_status() {
         global $wpdb;
