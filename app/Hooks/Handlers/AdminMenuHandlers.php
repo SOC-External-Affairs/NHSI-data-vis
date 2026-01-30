@@ -119,6 +119,15 @@ class AdminMenuHandlers {
         
         add_submenu_page(
             "excel-uploader-dashboard-menu",
+            __("Division by Year & State","excel-uploader"),
+            __("Division by Year & State","excel-uploader"),
+            "manage_options",
+            "division-report",
+            [$this, 'render_division_report']
+        );
+        
+        add_submenu_page(
+            "excel-uploader-dashboard-menu",
             __("Check Duplicates","excel-uploader"),
             __("Check Duplicates","excel-uploader"),
             "manage_options",
@@ -183,6 +192,11 @@ class AdminMenuHandlers {
     public function render_country_trends_report() {
         $controller = new \ExcelUploader\Controllers\ReportsController();
         $controller->render_country_trends_report();
+    }
+    
+    public function render_division_report() {
+        $controller = new \ExcelUploader\Controllers\ReportsController();
+        $controller->render_division_report();
     }
 
     public function suitepress_plugins_names_enqueue_assets() {

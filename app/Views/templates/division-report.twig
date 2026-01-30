@@ -1,0 +1,249 @@
+<div class="wrap">
+    <h1>{{ page_title }}</h1>
+    {% include 'report-styles.twig' %}
+    
+    <div class="postbox">
+        <div class="inside">
+            {% if sankeyData %}
+                <div style="display: flex; gap: 20px; margin-bottom: 15px; align-items: center;">
+                    <div>
+                        <label for="year-filter">Year:</label>
+                        <select id="year-filter" style="margin-left: 5px; padding: 5px;">
+                            <option value="">All Years</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="state-filter">State:</label>
+                        <select id="state-filter" style="margin-left: 5px; padding: 5px;">
+                            <option value="">All States</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="division-filter">Division:</label>
+                        <select id="division-filter" style="margin-left: 5px; padding: 5px;">
+                            <option value="">All Divisions</option>
+                        </select>
+                    </div>
+                    <button id="reset-filters" style="padding: 5px 10px; background: #2271b1; color: white; border: none; border-radius: 3px; cursor: pointer;">Reset</button>
+                </div>
+                
+                <div id="detail-panel" style="background: #f0f6fc; padding: 10px; margin-bottom: 15px; border-radius: 5px; display: none;">
+                    <h3 id="detail-title">Select filters to see details</h3>
+                    <div id="detail-content"></div>
+                </div>
+                
+                <div id="sankey-chart" style="width: 100%; height: 700px;"></div>
+                
+                <table class="wp-list-table widefat striped" style="margin-top: 20px;">
+                    <thead>
+                        <tr>
+                            <th>Year</th>
+                            <th>State</th>
+                            <th>Division</th>
+                            <th>Count</th>
+                        </tr>
+                    </thead>
+                    <tbody id="data-table">
+                        {% for row in data %}
+                            <tr data-year="{{ row.year_attended }}" data-state="{{ row.home_state }}" data-division="{{ row.division }}">
+                                <td>{{ row.year_attended }}</td>
+                                <td>{{ row.home_state }}</td>
+                                <td>{{ row.division }}</td>
+                                <td><strong>{{ row.count }}</strong></td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <p>No division data available.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script src="https://unpkg.com/d3-sankey@0.12.3/dist/d3-sankey.min.js"></script>
+<script>
+{% if sankeyData %}
+const sankeyData = {{ sankeyData|json_encode|raw }};
+const rawData = {{ data|json_encode|raw }};
+
+const margin = {top: 50, right: 50, bottom: 50, left: 50};
+const width = document.getElementById('sankey-chart').offsetWidth - margin.left - margin.right;
+const height = 700 - margin.top - margin.bottom;
+
+const svg = d3.select('#sankey-chart')
+    .append('svg')
+    .attr('width', width + margin.left + margin.right)
+    .attr('height', height + margin.top + margin.bottom)
+    .append('g')
+    .attr('transform', `translate(${margin.left},${margin.top})`);
+
+const sankey = d3.sankey()
+    .nodeWidth(15)
+    .nodePadding(10)
+    .extent([[1, 1], [width - 1, height - 6]]);
+
+const {nodes, links} = sankey(sankeyData);
+
+const color = d3.scaleOrdinal()
+    .domain(['year', 'state', 'division'])
+    .range(['#2271b1', '#135e96', '#d63384']);
+
+let selectedFlow = null;
+
+// Add links without click functionality
+const linkElements = svg.append('g')
+    .selectAll('path')
+    .data(links)
+    .join('path')
+    .attr('d', d3.sankeyLinkHorizontal())
+    .attr('stroke', '#aaa')
+    .attr('stroke-width', d => Math.max(1, d.width))
+    .attr('fill', 'none')
+    .attr('opacity', 0.5);
+
+// Add nodes without click functionality
+const nodeElements = svg.append('g')
+    .selectAll('rect')
+    .data(nodes)
+    .join('rect')
+    .attr('x', d => d.x0)
+    .attr('y', d => d.y0)
+    .attr('height', d => d.y1 - d.y0)
+    .attr('width', d => d.x1 - d.x0)
+    .attr('fill', d => color(d.category))
+    .attr('stroke', '#000')
+    .attr('stroke-width', 0.5);
+
+// Add node labels
+svg.append('g')
+    .selectAll('text')
+    .data(nodes)
+    .join('text')
+    .attr('x', d => d.x0 < width / 2 ? d.x1 + 6 : d.x0 - 6)
+    .attr('y', d => (d.y1 + d.y0) / 2)
+    .attr('dy', '0.35em')
+    .attr('text-anchor', d => d.x0 < width / 2 ? 'start' : 'end')
+    .text(d => d.name)
+    .style('font-size', '12px')
+    .style('font-family', 'Arial, sans-serif');
+
+// Populate dropdowns
+const years = [...new Set(rawData.map(row => row.year_attended))].sort();
+const states = [...new Set(rawData.map(row => row.home_state))].sort();
+const divisions = [...new Set(rawData.map(row => row.division))].sort();
+
+years.forEach(year => {
+    document.getElementById('year-filter').innerHTML += `<option value="${year}">${year}</option>`;
+});
+states.forEach(state => {
+    document.getElementById('state-filter').innerHTML += `<option value="${state}">${state}</option>`;
+});
+divisions.forEach(division => {
+    document.getElementById('division-filter').innerHTML += `<option value="${division}">${division}</option>`;
+});
+
+// Add event listeners
+document.getElementById('year-filter').addEventListener('change', updateFilters);
+document.getElementById('state-filter').addEventListener('change', updateFilters);
+document.getElementById('division-filter').addEventListener('change', updateFilters);
+document.getElementById('reset-filters').addEventListener('click', resetFilters);
+
+function updateFilters() {
+    const selectedYear = document.getElementById('year-filter').value;
+    const selectedState = document.getElementById('state-filter').value;
+    const selectedDivision = document.getElementById('division-filter').value;
+    
+    // Reset all flows
+    linkElements.attr('opacity', 0.2).attr('stroke', '#ccc');
+    nodeElements.attr('stroke-width', 0.5);
+    
+    // Find matching flows
+    const matchingFlows = links.filter(link => {
+        const yearMatch = !selectedYear || link.year === selectedYear;
+        const stateMatch = !selectedState || link.state === selectedState;
+        const divisionMatch = !selectedDivision || link.division === selectedDivision;
+        return yearMatch && stateMatch && divisionMatch;
+    });
+    
+    // Highlight matching flows
+    linkElements.filter(link => matchingFlows.includes(link))
+        .attr('opacity', 0.8)
+        .attr('stroke', '#ff6b35');
+    
+    // Highlight matching nodes
+    const matchingNodes = nodes.filter(node => {
+        if (node.category === 'year' && selectedYear) return node.name === selectedYear;
+        if (node.category === 'state' && selectedState) return node.name === selectedState;
+        if (node.category === 'division' && selectedDivision) return node.name === selectedDivision;
+        return false;
+    });
+    
+    nodeElements.filter(node => matchingNodes.includes(node))
+        .attr('stroke-width', 3);
+    
+    // Update details and table
+    showFilterDetails(selectedYear, selectedState, selectedDivision);
+    filterTableByDropdowns(selectedYear, selectedState, selectedDivision);
+}
+
+function showFilterDetails(year, state, division) {
+    const panel = document.getElementById('detail-panel');
+    const title = document.getElementById('detail-title');
+    const content = document.getElementById('detail-content');
+    
+    if (!year && !state && !division) {
+        panel.style.display = 'none';
+        return;
+    }
+    
+    panel.style.display = 'block';
+    
+    let filters = [];
+    if (year) filters.push(`Year: ${year}`);
+    if (state) filters.push(`State: ${state}`);
+    if (division) filters.push(`Division: ${division}`);
+    
+    title.textContent = filters.join(' | ');
+    
+    const filteredData = rawData.filter(row => {
+        return (!year || row.year_attended === year) &&
+               (!state || row.home_state === state) &&
+               (!division || row.division === division);
+    });
+    
+    const totalStudents = filteredData.reduce((sum, row) => sum + parseInt(row.count), 0);
+    content.innerHTML = `<strong>${totalStudents} students</strong> match the selected filters`;
+}
+
+function filterTableByDropdowns(year, state, division) {
+    const rows = document.querySelectorAll('#data-table tr');
+    rows.forEach(row => {
+        const rowYear = row.dataset.year;
+        const rowState = row.dataset.state;
+        const rowDivision = row.dataset.division;
+        
+        const yearMatch = !year || rowYear === year;
+        const stateMatch = !state || rowState === state;
+        const divisionMatch = !division || rowDivision === division;
+        
+        row.style.display = (yearMatch && stateMatch && divisionMatch) ? '' : 'none';
+    });
+}
+
+function resetFilters() {
+    document.getElementById('year-filter').value = '';
+    document.getElementById('state-filter').value = '';
+    document.getElementById('division-filter').value = '';
+    
+    linkElements.attr('opacity', 0.5).attr('stroke', '#aaa');
+    nodeElements.attr('stroke-width', 0.5);
+    
+    document.getElementById('detail-panel').style.display = 'none';
+    
+    const rows = document.querySelectorAll('#data-table tr');
+    rows.forEach(row => row.style.display = '');
+}
+{% endif %}
+</script>

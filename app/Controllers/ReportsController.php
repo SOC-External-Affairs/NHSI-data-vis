@@ -155,4 +155,78 @@ class ReportsController {
         
         echo $renderer->render('country-trends-report.twig', $templateData);
     }
+    
+    /**
+     * Render division by year and state report
+     */
+    public function render_division_report() {
+        $renderer = new TwigRenderer();
+        $attendeeDb = new AttendeeDatabase();
+        
+        $rawData = $attendeeDb->get_waterfall_data();
+        
+        // Build Sankey data structure
+        $nodes = [];
+        $links = [];
+        $nodeIndex = 0;
+        $nodeMap = [];
+        
+        // Create nodes and links for Sankey
+        foreach ($rawData as $row) {
+            $year = $row->year_attended;
+            $state = $row->home_state;
+            $division = $row->division;
+            $count = intval($row->count);
+            
+            // Create unique node IDs
+            $yearNode = "Year_" . $year;
+            $stateNode = "State_" . $state;
+            $divisionNode = "Division_" . $division;
+            
+            // Add nodes if not exists
+            if (!isset($nodeMap[$yearNode])) {
+                $nodeMap[$yearNode] = $nodeIndex++;
+                $nodes[] = ['name' => $year, 'category' => 'year'];
+            }
+            if (!isset($nodeMap[$stateNode])) {
+                $nodeMap[$stateNode] = $nodeIndex++;
+                $nodes[] = ['name' => $state, 'category' => 'state'];
+            }
+            if (!isset($nodeMap[$divisionNode])) {
+                $nodeMap[$divisionNode] = $nodeIndex++;
+                $nodes[] = ['name' => $division, 'category' => 'division'];
+            }
+            
+            // Add links
+            $links[] = [
+                'source' => $nodeMap[$yearNode],
+                'target' => $nodeMap[$stateNode],
+                'value' => $count,
+                'year' => $year,
+                'state' => $state,
+                'division' => $division,
+                'type' => 'year-to-state'
+            ];
+            $links[] = [
+                'source' => $nodeMap[$stateNode],
+                'target' => $nodeMap[$divisionNode],
+                'value' => $count,
+                'year' => $year,
+                'state' => $state,
+                'division' => $division,
+                'type' => 'state-to-division'
+            ];
+        }
+        
+        $templateData = [
+            'page_title' => 'Division Flow: Year → State → Division',
+            'data' => $rawData,
+            'sankeyData' => [
+                'nodes' => $nodes,
+                'links' => $links
+            ]
+        ];
+        
+        echo $renderer->render('division-report.twig', $templateData);
+    }
 }
