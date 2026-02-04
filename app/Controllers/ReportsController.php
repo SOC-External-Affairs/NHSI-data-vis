@@ -178,10 +178,14 @@ class ReportsController {
             $division = $row->division;
             $count = intval($row->count);
             
+            // Create 4th column - Primary Major
+            $major = !empty($row->primary_major) ? $row->primary_major : 'Unknown';
+            
             // Create unique node IDs
             $yearNode = "Year_" . $year;
             $stateNode = "State_" . $state;
             $divisionNode = "Division_" . $division;
+            $majorNode = "Major_" . md5($major);
             
             // Add nodes if not exists
             if (!isset($nodeMap[$yearNode])) {
@@ -196,6 +200,10 @@ class ReportsController {
                 $nodeMap[$divisionNode] = $nodeIndex++;
                 $nodes[] = ['name' => $division, 'category' => 'division'];
             }
+            if (!isset($nodeMap[$majorNode])) {
+                $nodeMap[$majorNode] = $nodeIndex++;
+                $nodes[] = ['name' => $major, 'category' => 'major'];
+            }
             
             // Add links
             $links[] = [
@@ -205,6 +213,7 @@ class ReportsController {
                 'year' => $year,
                 'state' => $state,
                 'division' => $division,
+                'major' => $major,
                 'type' => 'year-to-state'
             ];
             $links[] = [
@@ -214,7 +223,18 @@ class ReportsController {
                 'year' => $year,
                 'state' => $state,
                 'division' => $division,
+                'major' => $major,
                 'type' => 'state-to-division'
+            ];
+            $links[] = [
+                'source' => $nodeMap[$divisionNode],
+                'target' => $nodeMap[$majorNode],
+                'value' => $count,
+                'year' => $year,
+                'state' => $state,
+                'division' => $division,
+                'major' => $major,
+                'type' => 'division-to-major'
             ];
         }
         

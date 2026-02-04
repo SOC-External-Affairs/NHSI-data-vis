@@ -16,6 +16,7 @@
                         <label for="state-filter">State:</label>
                         <select id="state-filter" style="margin-left: 5px; padding: 5px;">
                             <option value="">All States</option>
+                            <option value="IL" selected>IL</option>
                         </select>
                     </div>
                     <div>
@@ -40,6 +41,7 @@
                             <th>Year</th>
                             <th>State</th>
                             <th>Division</th>
+                            <th>Primary Major</th>
                             <th>Count</th>
                         </tr>
                     </thead>
@@ -87,8 +89,8 @@ const sankey = d3.sankey()
 const {nodes, links} = sankey(sankeyData);
 
 const color = d3.scaleOrdinal()
-    .domain(['year', 'state', 'division'])
-    .range(['#2271b1', '#135e96', '#d63384']);
+    .domain(['year', 'state', 'division', 'major'])
+    .range(['#2271b1', '#135e96', '#d63384', '#28a745']);
 
 let selectedFlow = null;
 
@@ -117,7 +119,7 @@ const nodeElements = svg.append('g')
     .attr('stroke-width', 0.5);
 
 // Add node labels
-svg.append('g')
+const labelElements = svg.append('g')
     .selectAll('text')
     .data(nodes)
     .join('text')
@@ -127,7 +129,8 @@ svg.append('g')
     .attr('text-anchor', d => d.x0 < width / 2 ? 'start' : 'end')
     .text(d => d.name)
     .style('font-size', '12px')
-    .style('font-family', 'Arial, sans-serif');
+    .style('font-family', 'Arial, sans-serif')
+    .style('font-weight', 'normal');
 
 // Populate dropdowns
 const years = [...new Set(rawData.map(row => row.year_attended))].sort();
@@ -150,6 +153,9 @@ document.getElementById('state-filter').addEventListener('change', updateFilters
 document.getElementById('division-filter').addEventListener('change', updateFilters);
 document.getElementById('reset-filters').addEventListener('click', resetFilters);
 
+// Initialize with IL selected
+updateFilters();
+
 function updateFilters() {
     const selectedYear = document.getElementById('year-filter').value;
     const selectedState = document.getElementById('state-filter').value;
@@ -158,6 +164,7 @@ function updateFilters() {
     // Reset all flows
     linkElements.attr('opacity', 0.2).attr('stroke', '#ccc');
     nodeElements.attr('stroke-width', 0.5);
+    labelElements.style('font-weight', 'normal');
     
     // Find matching flows
     const matchingFlows = links.filter(link => {
@@ -172,16 +179,18 @@ function updateFilters() {
         .attr('opacity', 0.8)
         .attr('stroke', '#ff6b35');
     
-    // Highlight matching nodes
-    const matchingNodes = nodes.filter(node => {
-        if (node.category === 'year' && selectedYear) return node.name === selectedYear;
-        if (node.category === 'state' && selectedState) return node.name === selectedState;
-        if (node.category === 'division' && selectedDivision) return node.name === selectedDivision;
-        return false;
+    // Highlight matching nodes and make labels bold
+    const activeNodes = new Set();
+    matchingFlows.forEach(link => {
+        activeNodes.add(link.source.index);
+        activeNodes.add(link.target.index);
     });
     
-    nodeElements.filter(node => matchingNodes.includes(node))
+    nodeElements.filter((d, i) => activeNodes.has(i))
         .attr('stroke-width', 3);
+    
+    labelElements.filter((d, i) => activeNodes.has(i))
+        .style('font-weight', 'bold');
     
     // Update details and table
     showFilterDetails(selectedYear, selectedState, selectedDivision);
@@ -234,16 +243,19 @@ function filterTableByDropdowns(year, state, division) {
 
 function resetFilters() {
     document.getElementById('year-filter').value = '';
-    document.getElementById('state-filter').value = '';
+    document.getElementById('state-filter').value = 'IL';
     document.getElementById('division-filter').value = '';
     
     linkElements.attr('opacity', 0.5).attr('stroke', '#aaa');
     nodeElements.attr('stroke-width', 0.5);
+    labelElements.style('font-weight', 'normal');
     
     document.getElementById('detail-panel').style.display = 'none';
     
     const rows = document.querySelectorAll('#data-table tr');
     rows.forEach(row => row.style.display = '');
+    
+    updateFilters();
 }
 {% endif %}
 </script>
