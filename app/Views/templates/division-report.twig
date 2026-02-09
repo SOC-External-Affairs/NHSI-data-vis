@@ -16,7 +16,6 @@
                         <label for="state-filter">State:</label>
                         <select id="state-filter" style="margin-left: 5px; padding: 5px;">
                             <option value="">All States</option>
-                            <option value="IL" selected>IL</option>
                         </select>
                     </div>
                     <div>
@@ -34,6 +33,7 @@
                 </div>
                 
                 <div id="sankey-chart" style="width: 100%; height: 700px;"></div>
+                <div id="sankey-message" style="display: none; padding: 20px; text-align: center; color: #666;">Please select at least 2 filters to view the Sankey diagram</div>
                 
                 <table class="wp-list-table widefat striped" style="margin-top: 20px;">
                     <thead>
@@ -67,72 +67,169 @@
 <script src="https://unpkg.com/d3-sankey@0.12.3/dist/d3-sankey.min.js"></script>
 <script>
 {% if sankeyData %}
-const sankeyData = {{ sankeyData|json_encode|raw }};
+// Store the data from the server (PHP sends this data to JavaScript)
+const originalSankeyData = {{ sankeyData|json_encode|raw }};
 const rawData = {{ data|json_encode|raw }};
 
+// Set up spacing around the chart so it doesn't touch the edges
 const margin = {top: 50, right: 50, bottom: 50, left: 50};
+// Calculate how wide the chart should be (container width minus left and right margins)
 const width = document.getElementById('sankey-chart').offsetWidth - margin.left - margin.right;
+// Calculate how tall the chart should be (700px minus top and bottom margins)
 const height = 700 - margin.top - margin.bottom;
 
-const svg = d3.select('#sankey-chart')
-    .append('svg')
-    .attr('width', width + margin.left + margin.right)
-    .attr('height', height + margin.top + margin.bottom)
-    .append('g')
-    .attr('transform', `translate(${margin.left},${margin.top})`);
-
-const sankey = d3.sankey()
-    .nodeWidth(15)
-    .nodePadding(10)
-    .extent([[1, 1], [width - 1, height - 6]]);
-
-const {nodes, links} = sankey(sankeyData);
-
+// Define colors for each category (Year, State, Division, Major)
 const color = d3.scaleOrdinal()
     .domain(['year', 'state', 'division', 'major'])
     .range(['#2271b1', '#135e96', '#d63384', '#28a745']);
 
-let selectedFlow = null;
+// Create tooltip element
+const tooltip = d3.select('body').append('div')
+    .style('position', 'absolute')
+    .style('background', 'rgba(0, 0, 0, 0.8)')
+    .style('color', 'white')
+    .style('padding', '10px')
+    .style('border-radius', '5px')
+    .style('pointer-events', 'none')
+    .style('display', 'none')
+    .style('z-index', '1000');
 
-// Add links without click functionality
-const linkElements = svg.append('g')
-    .selectAll('path')
-    .data(links)
-    .join('path')
-    .attr('d', d3.sankeyLinkHorizontal())
-    .attr('stroke', '#aaa')
-    .attr('stroke-width', d => Math.max(1, d.width))
-    .attr('fill', 'none')
-    .attr('opacity', 0.5);
+function showTooltip(event, d) {
+    let info = `<strong>${d.value} students</strong><br>`;
+    if (d.year) info += `Year: ${d.year}<br>`;
+    if (d.state) info += `State: ${d.state}<br>`;
+    if (d.division) info += `Division: ${d.division}<br>`;
+    info += `${d.source.name} → ${d.target.name}`;
+    
+    tooltip.html(info)
+        .style('display', 'block')
+        .style('left', (event.pageX + 10) + 'px')
+        .style('top', (event.pageY - 10) + 'px');
+}
 
-// Add nodes without click functionality
-const nodeElements = svg.append('g')
-    .selectAll('rect')
-    .data(nodes)
-    .join('rect')
-    .attr('x', d => d.x0)
-    .attr('y', d => d.y0)
-    .attr('height', d => d.y1 - d.y0)
-    .attr('width', d => d.x1 - d.x0)
-    .attr('fill', d => color(d.category))
-    .attr('stroke', '#000')
-    .attr('stroke-width', 0.5);
+function hideTooltip() {
+    tooltip.style('display', 'none');
+}
 
-// Add node labels
-const labelElements = svg.append('g')
-    .selectAll('text')
-    .data(nodes)
-    .join('text')
-    .attr('x', d => d.x0 < width / 2 ? d.x1 + 6 : d.x0 - 6)
-    .attr('y', d => (d.y1 + d.y0) / 2)
-    .attr('dy', '0.35em')
-    .attr('text-anchor', d => d.x0 < width / 2 ? 'start' : 'end')
-    .text(d => d.name)
-    .style('font-size', '12px')
-    .style('font-family', 'Arial, sans-serif')
-    .style('font-weight', 'normal');
+function buildFilteredSankeyData(year, state, division) {
+    const filteredRawData = rawData.filter(row => {
+        return (!year || row.year_attended === year) &&
+               (!state || row.home_state === state) &&
+               (!division || row.division === division);
+    });
+    
+    if (filteredRawData.length === 0) {
+        return { nodes: [], links: [] };
+    }
+    
+    const nodeSet = new Set();
+    const linkMap = new Map();
+    
+    filteredRawData.forEach(row => {
+        const year = row.year_attended;
+        const state = row.home_state;
+        const division = row.division;
+        const major = row.primary_major || 'Unknown';
+        const count = parseInt(row.count);
+        
+        nodeSet.add(`year:${year}`);
+        nodeSet.add(`state:${state}`);
+        nodeSet.add(`division:${division}`);
+        nodeSet.add(`major:${major}`);
+        
+        const link1Key = `${year}|${state}`;
+        const link2Key = `${state}|${division}`;
+        const link3Key = `${division}|${major}`;
+        
+        linkMap.set(link1Key, (linkMap.get(link1Key) || 0) + count);
+        linkMap.set(link2Key, (linkMap.get(link2Key) || 0) + count);
+        linkMap.set(link3Key, (linkMap.get(link3Key) || 0) + count);
+    });
+    
+    const nodes = Array.from(nodeSet).map(n => {
+        const [category, name] = n.split(':');
+        return { name, category };
+    });
+    
+    const nodeMap = new Map();
+    nodes.forEach((node, i) => nodeMap.set(node.name, i));
+    
+    const links = [];
+    linkMap.forEach((value, key) => {
+        const [source, target] = key.split('|');
+        links.push({
+            source: nodeMap.get(source),
+            target: nodeMap.get(target),
+            value: value
+        });
+    });
+    
+    return { nodes, links };
+}
 
-// Populate dropdowns
+function renderSankey(sankeyData) {
+    d3.select('#sankey-chart svg').remove();
+    
+    const svg = d3.select('#sankey-chart')
+        .append('svg')
+        .attr('width', width + margin.left + margin.right)
+        .attr('height', height + margin.top + margin.bottom)
+        .append('g')
+        .attr('transform', `translate(${margin.left},${margin.top})`);
+    
+    const sankey = d3.sankey()
+        .nodeWidth(15)
+        .nodePadding(10)
+        .extent([[1, 1], [width - 1, height - 6]]);
+    
+    const {nodes, links} = sankey(sankeyData);
+    
+    svg.append('g')
+        .selectAll('path')
+        .data(links)
+        .join('path')
+        .attr('d', d3.sankeyLinkHorizontal())
+        .attr('stroke', '#aaa')
+        .attr('stroke-width', d => Math.max(1, d.width))
+        .attr('fill', 'none')
+        .attr('opacity', 0.5)
+        .style('cursor', 'pointer')
+        .on('mouseover', function(event, d) {
+            d3.select(this).attr('opacity', 1).attr('stroke', '#ff6b35');
+            showTooltip(event, d);
+        })
+        .on('mouseout', function(event, d) {
+            d3.select(this).attr('opacity', 0.5).attr('stroke', '#aaa');
+            hideTooltip();
+        });
+    
+    svg.append('g')
+        .selectAll('rect')
+        .data(nodes)
+        .join('rect')
+        .attr('x', d => d.x0)
+        .attr('y', d => d.y0)
+        .attr('height', d => d.y1 - d.y0)
+        .attr('width', d => d.x1 - d.x0)
+        .attr('fill', d => color(d.category))
+        .attr('stroke', '#000')
+        .attr('stroke-width', 0.5);
+    
+    svg.append('g')
+        .selectAll('text')
+        .data(nodes)
+        .join('text')
+        .attr('x', d => d.x0 < width / 2 ? d.x1 + 6 : d.x0 - 6)
+        .attr('y', d => (d.y1 + d.y0) / 2)
+        .attr('dy', '0.35em')
+        .attr('text-anchor', d => d.x0 < width / 2 ? 'start' : 'end')
+        .text(d => d.name)
+        .style('font-size', '12px')
+        .style('font-family', 'Arial, sans-serif')
+        .style('font-weight', 'normal');
+}
+
+// Build the dropdown filter options from the data
 const years = [...new Set(rawData.map(row => row.year_attended))].sort();
 const states = [...new Set(rawData.map(row => row.home_state))].sort();
 const divisions = [...new Set(rawData.map(row => row.division))].sort();
@@ -140,20 +237,21 @@ const divisions = [...new Set(rawData.map(row => row.division))].sort();
 years.forEach(year => {
     document.getElementById('year-filter').innerHTML += `<option value="${year}">${year}</option>`;
 });
+
 states.forEach(state => {
-    document.getElementById('state-filter').innerHTML += `<option value="${state}">${state}</option>`;
+    const selected = state === 'IL' ? ' selected' : '';
+    document.getElementById('state-filter').innerHTML += `<option value="${state}"${selected}>${state}</option>`;
 });
+
 divisions.forEach(division => {
     document.getElementById('division-filter').innerHTML += `<option value="${division}">${division}</option>`;
 });
 
-// Add event listeners
 document.getElementById('year-filter').addEventListener('change', updateFilters);
 document.getElementById('state-filter').addEventListener('change', updateFilters);
 document.getElementById('division-filter').addEventListener('change', updateFilters);
 document.getElementById('reset-filters').addEventListener('click', resetFilters);
 
-// Initialize with IL selected
 updateFilters();
 
 function updateFilters() {
@@ -161,43 +259,35 @@ function updateFilters() {
     const selectedState = document.getElementById('state-filter').value;
     const selectedDivision = document.getElementById('division-filter').value;
     
-    // Reset all flows
-    linkElements.attr('opacity', 0.2).attr('stroke', '#ccc');
-    nodeElements.attr('stroke-width', 0.5);
-    labelElements.style('font-weight', 'normal');
+    const filterCount = [selectedYear, selectedState, selectedDivision].filter(f => f).length;
     
-    // Find matching flows
-    const matchingFlows = links.filter(link => {
-        const yearMatch = !selectedYear || link.year === selectedYear;
-        const stateMatch = !selectedState || link.state === selectedState;
-        const divisionMatch = !selectedDivision || link.division === selectedDivision;
-        return yearMatch && stateMatch && divisionMatch;
-    });
+    if (filterCount < 1) {
+        document.getElementById('sankey-chart').style.display = 'none';
+        document.getElementById('sankey-message').style.display = 'block';
+        document.getElementById('sankey-message').innerHTML = 'Please select at least 1 filter to view the Sankey diagram';
+        document.getElementById('detail-panel').style.display = 'none';
+        filterTableByDropdowns(selectedYear, selectedState, selectedDivision);
+        return;
+    }
     
-    // Highlight matching flows
-    linkElements.filter(link => matchingFlows.includes(link))
-        .attr('opacity', 0.8)
-        .attr('stroke', '#ff6b35');
+    document.getElementById('sankey-chart').style.display = 'block';
+    document.getElementById('sankey-message').style.display = 'none';
     
-    // Highlight matching nodes and make labels bold
-    const activeNodes = new Set();
-    matchingFlows.forEach(link => {
-        activeNodes.add(link.source.index);
-        activeNodes.add(link.target.index);
-    });
+    const filteredData = buildFilteredSankeyData(selectedYear, selectedState, selectedDivision);
     
-    nodeElements.filter((d, i) => activeNodes.has(i))
-        .attr('stroke-width', 3);
+    if (filteredData.links.length === 0) {
+        document.getElementById('sankey-chart').style.display = 'none';
+        document.getElementById('sankey-message').innerHTML = 'No data available for selected filters';
+        document.getElementById('sankey-message').style.display = 'block';
+        return;
+    }
     
-    labelElements.filter((d, i) => activeNodes.has(i))
-        .style('font-weight', 'bold');
-    
-    // Update details and table
-    showFilterDetails(selectedYear, selectedState, selectedDivision);
+    renderSankey(filteredData);
+    showFilterDetails(selectedYear, selectedState, selectedDivision, filteredData.links);
     filterTableByDropdowns(selectedYear, selectedState, selectedDivision);
 }
 
-function showFilterDetails(year, state, division) {
+function showFilterDetails(year, state, division, matchingFlows) {
     const panel = document.getElementById('detail-panel');
     const title = document.getElementById('detail-title');
     const content = document.getElementById('detail-content');
@@ -216,14 +306,47 @@ function showFilterDetails(year, state, division) {
     
     title.textContent = filters.join(' | ');
     
-    const filteredData = rawData.filter(row => {
-        return (!year || row.year_attended === year) &&
-               (!state || row.home_state === state) &&
-               (!division || row.division === division);
-    });
+    const totalStudents = matchingFlows.reduce((sum, link) => sum + link.value, 0);
     
-    const totalStudents = filteredData.reduce((sum, row) => sum + parseInt(row.count), 0);
-    content.innerHTML = `<strong>${totalStudents} students</strong> match the selected filters`;
+    let details = `<strong>${totalStudents} students</strong><br><br>`;
+    
+    if (!division) {
+        const divisionCounts = {};
+        matchingFlows.forEach(link => {
+            divisionCounts[link.division] = (divisionCounts[link.division] || 0) + link.value;
+        });
+        details += '<strong>By Division:</strong><br>';
+        Object.entries(divisionCounts).sort((a, b) => b[1] - a[1]).forEach(([div, count]) => {
+            details += `&nbsp;&nbsp;• ${div}: ${count}<br>`;
+        });
+    }
+    
+    if (!year) {
+        const yearCounts = {};
+        matchingFlows.forEach(link => {
+            yearCounts[link.year] = (yearCounts[link.year] || 0) + link.value;
+        });
+        details += '<br><strong>By Year:</strong><br>';
+        Object.entries(yearCounts).sort((a, b) => a[0].localeCompare(b[0])).forEach(([yr, count]) => {
+            details += `&nbsp;&nbsp;• ${yr}: ${count}<br>`;
+        });
+    }
+    
+    if (!state) {
+        const stateCounts = {};
+        matchingFlows.forEach(link => {
+            stateCounts[link.state] = (stateCounts[link.state] || 0) + link.value;
+        });
+        details += '<br><strong>By State:</strong><br>';
+        Object.entries(stateCounts).sort((a, b) => b[1] - a[1]).slice(0, 5).forEach(([st, count]) => {
+            details += `&nbsp;&nbsp;• ${st}: ${count}<br>`;
+        });
+        if (Object.keys(stateCounts).length > 5) {
+            details += `&nbsp;&nbsp;• ...and ${Object.keys(stateCounts).length - 5} more states<br>`;
+        }
+    }
+    
+    content.innerHTML = details;
 }
 
 function filterTableByDropdowns(year, state, division) {
@@ -232,11 +355,9 @@ function filterTableByDropdowns(year, state, division) {
         const rowYear = row.dataset.year;
         const rowState = row.dataset.state;
         const rowDivision = row.dataset.division;
-        
         const yearMatch = !year || rowYear === year;
         const stateMatch = !state || rowState === state;
         const divisionMatch = !division || rowDivision === division;
-        
         row.style.display = (yearMatch && stateMatch && divisionMatch) ? '' : 'none';
     });
 }
@@ -245,16 +366,9 @@ function resetFilters() {
     document.getElementById('year-filter').value = '';
     document.getElementById('state-filter').value = 'IL';
     document.getElementById('division-filter').value = '';
-    
-    linkElements.attr('opacity', 0.5).attr('stroke', '#aaa');
-    nodeElements.attr('stroke-width', 0.5);
-    labelElements.style('font-weight', 'normal');
-    
     document.getElementById('detail-panel').style.display = 'none';
-    
     const rows = document.querySelectorAll('#data-table tr');
     rows.forEach(row => row.style.display = '');
-    
     updateFilters();
 }
 {% endif %}

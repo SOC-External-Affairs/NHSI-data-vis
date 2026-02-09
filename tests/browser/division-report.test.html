@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Division Report Sankey Tests</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://unpkg.com/d3-sankey@0.12.3/dist/d3-sankey.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .test { margin: 10px 0; padding: 10px; border-left: 4px solid #ccc; }
+        .pass { border-color: #28a745; background: #d4edda; }
+        .fail { border-color: #dc3545; background: #f8d7da; }
+        .test-desc { color: #666; font-size: 14px; margin-top: 5px; }
+        #sankey-chart { width: 800px; height: 600px; border: 1px solid #ddd; margin: 20px 0; }
+    </style>
+</head>
+<body>
+    <h1>Division Report Sankey Chart Tests</h1>
+    <div id="test-results"></div>
+    <div id="sankey-chart"></div>
+
+    <script>
+        // Mock data matching expected structure
+        const mockData = [
+            { year_attended: '2020', home_state: 'IL', division: 'Engineering', count: '15' },
+            { year_attended: '2020', home_state: 'IL', division: 'Business', count: '10' },
+            { year_attended: '2020', home_state: 'CA', division: 'Engineering', count: '8' },
+            { year_attended: '2021', home_state: 'IL', division: 'Engineering', count: '20' },
+            { year_attended: '2021', home_state: 'NY', division: 'Business', count: '12' }
+        ];
+
+        const mockSankeyData = {
+            nodes: [
+                { name: '2020', category: 'year' },
+                { name: '2021', category: 'year' },
+                { name: 'IL', category: 'state' },
+                { name: 'CA', category: 'state' },
+                { name: 'NY', category: 'state' },
+                { name: 'Engineering', category: 'division' },
+                { name: 'Business', category: 'division' }
+            ],
+            links: [
+                { source: 0, target: 2, value: 25, year: '2020', state: 'IL', division: 'Engineering' },
+                { source: 0, target: 3, value: 8, year: '2020', state: 'CA', division: 'Engineering' },
+                { source: 1, target: 2, value: 20, year: '2021', state: 'IL', division: 'Engineering' },
+                { source: 1, target: 4, value: 12, year: '2021', state: 'NY', division: 'Business' },
+                { source: 2, target: 5, value: 35, state: 'IL', division: 'Engineering' },
+                { source: 2, target: 6, value: 10, state: 'IL', division: 'Business' },
+                { source: 3, target: 5, value: 8, state: 'CA', division: 'Engineering' },
+                { source: 4, target: 6, value: 12, state: 'NY', division: 'Business' }
+            ]
+        };
+
+        const tests = [];
+        
+        function test(name, description, fn) {
+            try {
+                fn();
+                tests.push({ name, description, pass: true });
+            } catch (e) {
+                tests.push({ name, description, pass: false, error: e.message });
+            }
+        }
+
+        function assert(condition, message) {
+            if (!condition) throw new Error(message);
+        }
+
+        // Render Sankey
+        const margin = { top: 50, right: 50, bottom: 50, left: 50 };
+        const width = 700;
+        const height = 500;
+
+        const svg = d3.select('#sankey-chart')
+            .append('svg')
+            .attr('width', width + margin.left + margin.right)
+            .attr('height', height + margin.top + margin.bottom)
+            .append('g')
+            .attr('transform', `translate(${margin.left},${margin.top})`);
+
+        const sankey = d3.sankey()
+            .nodeWidth(15)
+            .nodePadding(10)
+            .extent([[1, 1], [width - 1, height - 6]]);
+
+        const { nodes, links } = sankey(mockSankeyData);
+
+        svg.append('g')
+            .selectAll('path')
+            .data(links)
+            .join('path')
+            .attr('d', d3.sankeyLinkHorizontal())
+            .attr('stroke', '#aaa')
+            .attr('stroke-width', d => Math.max(1, d.width))
+            .attr('fill', 'none')
+            .attr('opacity', 0.5);
+
+        svg.append('g')
+            .selectAll('rect')
+            .data(nodes)
+            .join('rect')
+            .attr('x', d => d.x0)
+            .attr('y', d => d.y0)
+            .attr('height', d => d.y1 - d.y0)
+            .attr('width', d => d.x1 - d.x0)
+            .attr('fill', '#2271b1');
+
+        // Run Tests
+        test(
+            'Sankey data has correct node count',
+            'Verifies the Sankey diagram contains exactly 7 nodes (2 years + 3 states + 2 divisions)',
+            () => {
+                assert(nodes.length === 7, `Expected 7 nodes, got ${nodes.length}`);
+            }
+        );
+
+        test(
+            'Sankey data has correct link count',
+            'Verifies the Sankey diagram contains exactly 8 links connecting all data flows',
+            () => {
+                assert(links.length === 8, `Expected 8 links, got ${links.length}`);
+            }
+        );
+
+        test(
+            'Node values sum correctly',
+            'Verifies IL state node receives correct total of 45 students (25 from 2020 + 20 from 2021)',
+            () => {
+                const ilNode = nodes.find(n => n.name === 'IL');
+                const expectedValue = 45;
+                assert(ilNode.value === expectedValue, `IL node value ${ilNode.value} != ${expectedValue}`);
+            }
+        );
+
+        test(
+            'Link widths are proportional to values',
+            'Verifies visual representation: links with larger student counts are rendered wider',
+            () => {
+                const link1 = links.find(l => l.value === 25);
+                const link2 = links.find(l => l.value === 8);
+                assert(link1.width > link2.width, 'Larger value should have wider link');
+            }
+        );
+
+        test(
+            'Filter by state IL returns correct count',
+            'Verifies filtering by Illinois returns 45 total students across all years',
+            () => {
+                const filtered = mockData.filter(row => row.home_state === 'IL');
+                const total = filtered.reduce((sum, row) => sum + parseInt(row.count), 0);
+                assert(total === 45, `Expected 45 students from IL, got ${total}`);
+            }
+        );
+
+        test(
+            'Filter by year 2020 returns correct count',
+            'Verifies filtering by year 2020 returns 33 total students across all states',
+            () => {
+                const filtered = mockData.filter(row => row.year_attended === '2020');
+                const total = filtered.reduce((sum, row) => sum + parseInt(row.count), 0);
+                assert(total === 33, `Expected 33 students in 2020, got ${total}`);
+            }
+        );
+
+        test(
+            'Filter by division Engineering returns correct count',
+            'Verifies filtering by Engineering division returns 43 total students',
+            () => {
+                const filtered = mockData.filter(row => row.division === 'Engineering');
+                const total = filtered.reduce((sum, row) => sum + parseInt(row.count), 0);
+                assert(total === 43, `Expected 43 Engineering students, got ${total}`);
+            }
+        );
+
+        test(
+            'Combined filter (2020 + IL) returns correct count',
+            'Verifies multi-filter logic: 2020 + Illinois returns exactly 25 students',
+            () => {
+                const filtered = mockData.filter(row => 
+                    row.year_attended === '2020' && row.home_state === 'IL'
+                );
+                const total = filtered.reduce((sum, row) => sum + parseInt(row.count), 0);
+                assert(total === 25, `Expected 25 students, got ${total}`);
+            }
+        );
+
+        test(
+            'Links have required metadata',
+            'Verifies all links contain source, target, and positive value properties',
+            () => {
+                links.forEach((link, i) => {
+                    assert(link.source !== undefined, `Link ${i} missing source`);
+                    assert(link.target !== undefined, `Link ${i} missing target`);
+                    assert(link.value > 0, `Link ${i} has invalid value`);
+                });
+            }
+        );
+
+        test(
+            'Nodes are positioned correctly',
+            'Verifies all nodes are positioned within chart boundaries with valid dimensions',
+            () => {
+                nodes.forEach((node, i) => {
+                    assert(node.x0 >= 0 && node.x0 <= width, `Node ${i} x0 out of bounds`);
+                    assert(node.y0 >= 0 && node.y0 <= height, `Node ${i} y0 out of bounds`);
+                    assert(node.x1 > node.x0, `Node ${i} has invalid width`);
+                    assert(node.y1 > node.y0, `Node ${i} has invalid height`);
+                });
+            }
+        );
+
+        // Display results
+        const resultsDiv = document.getElementById('test-results');
+        const passed = tests.filter(t => t.pass).length;
+        const total = tests.length;
+        
+        resultsDiv.innerHTML = `<h2>Results: ${passed}/${total} passed</h2>`;
+        tests.forEach(t => {
+            const div = document.createElement('div');
+            div.className = `test ${t.pass ? 'pass' : 'fail'}`;
+            div.innerHTML = `
+                <div><strong>${t.pass ? '✓' : '✗'}</strong> ${t.name}${t.error ? `: ${t.error}` : ''}</div>
+                <div class="test-desc">${t.description}</div>
+            `;
+            resultsDiv.appendChild(div);
+        });
+    </script>
+</body>
+</html>

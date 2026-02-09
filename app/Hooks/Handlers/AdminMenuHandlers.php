@@ -134,6 +134,15 @@ class AdminMenuHandlers {
             "duplicate-checker",
             [$this, 'render_duplicate_checker']
         );
+        
+        add_submenu_page(
+            "excel-uploader-dashboard-menu",
+            __("Run Tests","excel-uploader"),
+            __("Run Tests","excel-uploader"),
+            "manage_options",
+            "run-tests",
+            [$this, 'render_tests']
+        );
     }
 
     public function tranpr_get_menu_icon()
@@ -197,6 +206,15 @@ class AdminMenuHandlers {
     public function render_division_report() {
         $controller = new \ExcelUploader\Controllers\ReportsController();
         $controller->render_division_report();
+    }
+    
+    public function render_tests() {
+        $testFile = EXCEL_UPLOADER_PATH . '/tests/browser/division-report.test.html';
+        if (file_exists($testFile)) {
+            readfile($testFile);
+        } else {
+            echo '<div class="wrap"><h1>Test file not found</h1></div>';
+        }
     }
 
     public function suitepress_plugins_names_enqueue_assets() {

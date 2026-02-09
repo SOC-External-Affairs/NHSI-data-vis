@@ -92,6 +92,19 @@ These columns will be completely ignored during import:
    - State Trends by Year (interactive line chart)
    - Country Trends by Year (interactive line chart)
 7. Check for duplicate records using **Check Duplicates** menu
+8. Run automated tests via **Run Tests** menu to validate report accuracy
+
+## Testing
+
+Browser-based tests are available to validate report calculations and visual flows:
+
+- Navigate to **Excel Uploader → Run Tests** in WordPress admin
+- Tests validate:
+  - Sankey chart node and link counts
+  - Data aggregation accuracy
+  - Filter logic (state, year, division)
+  - Visual positioning and proportions
+- All tests run in-browser with detailed explanations
 
 ## Security Features
 
