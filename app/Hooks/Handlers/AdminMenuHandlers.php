@@ -28,13 +28,22 @@ class AdminMenuHandlers {
     public function plugins_names_add_admin_menu() {
 
         add_menu_page(
-            __('Excel Uploader', 'excel-uploader'),
-            __('Excel Uploader', 'excel-uploader'),
+            __('Data Visualization', 'excel-uploader'),
+            __('Data Visualization', 'excel-uploader'),
             'manage_options',
             'excel-uploader-dashboard-menu',
             [$this, 'render_dashboard'],
             $this->tranpr_get_menu_icon(),
             26
+        );
+        
+        add_submenu_page(
+            "excel-uploader-dashboard-menu",
+            __("Excel Uploader","excel-uploader"),
+            __("Excel Uploader","excel-uploader"),
+            "manage_options",
+            "excel-uploader-dashboard-menu",
+            [$this, 'render_dashboard']
         );
         // add_submenu_page(
         //     "excel-uploader-dashboard-menu",

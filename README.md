@@ -1,4 +1,4 @@
-# Excel Uploader
+# Data Visualizer
 
 A WordPress plugin for securely importing and analyzing student attendee data from Excel files with built-in privacy protection and data redaction.
 
@@ -73,7 +73,7 @@ These columns will be completely ignored during import:
 
 ## Usage
 
-1. Navigate to **Excel Uploader** in WordPress admin menu
+1. Navigate to **Data Visualizer** in WordPress admin menu
 2. Upload your Excel file (.xlsx, .xls formats supported)
 3. Review imported data with automatic privacy protection applied
 4. **Search Records**: Use search fields to filter by:
@@ -101,7 +101,7 @@ These columns will be completely ignored during import:
 
 Browser-based tests are available to validate report calculations and visual flows:
 
-- Navigate to **Excel Uploader → Run Tests** in WordPress admin
+- Navigate to **Data Visualizer → Run Tests** in WordPress admin
 - Tests validate:
   - Sankey chart node and link counts
   - Word cloud rendering and font scaling

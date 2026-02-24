@@ -24,7 +24,7 @@ class ExcelUploadController {
         $renderer = new TwigRenderer();
         
         $templateData = [
-            'page_title' => get_admin_page_title(),
+            'page_title' => 'Data Visualizer',
             'success' => isset($_GET['success']) && $_GET['success'] == '1',
             'success_count' => $_GET['count'] ?? 0,
             'error' => isset($_GET['error']),
