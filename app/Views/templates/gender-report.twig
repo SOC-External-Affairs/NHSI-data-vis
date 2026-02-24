@@ -38,6 +38,7 @@
                                 {% endfor %}
                             </tbody>
                         </table>
+                        <p class="pronouns-note">Variations are consolidated (e.g., he, he/him, he/him/his → HE/HIM)</p>
                     {% else %}
                         <p>No pronouns data available.</p>
                     {% endif %}
@@ -71,6 +72,12 @@
 }
 .donut-chart table {
     font-size: 0.9em;
+}
+.pronouns-note {
+    font-size: 0.8em;
+    color: #646970;
+    font-style: italic;
+    margin-top: 10px;
 }
 </style>
 

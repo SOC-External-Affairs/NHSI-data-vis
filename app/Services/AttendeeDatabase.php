@@ -241,11 +241,25 @@ class AttendeeDatabase {
     public function get_by_pronouns() {
         global $wpdb;
         $table_name = $wpdb->prefix . 'attendee_records';
+        
         return $wpdb->get_results("
-            SELECT TRIM(UPPER(pronouns)) as pronouns, COUNT(*) as count 
+            SELECT 
+                CASE 
+                    WHEN TRIM(UPPER(pronouns)) IN ('HE', 'HE/HIM', 'HE/HIM/HIS', 'HE/HIS', 'HIM') THEN 'HE/HIM'
+                    WHEN TRIM(UPPER(pronouns)) IN ('SHE', 'SHE/HER', 'SHE/HER/HERS', 'SHE/HERS', 'HER') THEN 'SHE/HER'
+                    WHEN TRIM(UPPER(pronouns)) IN ('THEY', 'THEM', 'THEY/THEM', 'THEY/THEIR', 'THEIRS') THEN 'THEY/THEM'
+                    ELSE TRIM(UPPER(pronouns))
+                END as pronouns, 
+                COUNT(*) as count 
             FROM $table_name 
             WHERE pronouns IS NOT NULL AND pronouns != '' 
-            GROUP BY TRIM(UPPER(pronouns))
+            GROUP BY 
+                CASE 
+                    WHEN TRIM(UPPER(pronouns)) IN ('HE', 'HE/HIM', 'HE/HIM/HIS', 'HE/HIS', 'HIM') THEN 'HE/HIM'
+                    WHEN TRIM(UPPER(pronouns)) IN ('SHE', 'SHE/HER', 'SHE/HER/HERS', 'SHE/HERS', 'HER') THEN 'SHE/HER'
+                    WHEN TRIM(UPPER(pronouns)) IN ('THEY', 'THEM', 'THEY/THEM', 'THEY/THEIR', 'THEIRS') THEN 'THEY/THEM'
+                    ELSE TRIM(UPPER(pronouns))
+                END
             ORDER BY count DESC
         ");
     }
