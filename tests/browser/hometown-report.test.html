@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Hometown Report Tests</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/wordcloud@1.2.2/src/wordcloud2.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .test { margin: 10px 0; padding: 10px; border-left: 4px solid #ccc; }
+        .pass { border-color: #28a745; background: #d4edda; }
+        .fail { border-color: #dc3545; background: #f8d7da; }
+        .test-desc { color: #666; font-size: 14px; margin-top: 5px; }
+        #wordcloud { width: 800px; height: 500px; border: 1px solid #ddd; margin: 20px 0; }
+    </style>
+</head>
+<body>
+    <h1>Hometown Report Word Cloud Tests</h1>
+    <div id="test-results"></div>
+    <canvas id="wordcloud"></canvas>
+
+    <script>
+        const mockData = [
+            { hometown: 'Chicago', count: 45 },
+            { hometown: 'New York', count: 38 },
+            { hometown: 'Los Angeles', count: 32 },
+            { hometown: 'Boston', count: 25 },
+            { hometown: 'Seattle', count: 20 },
+            { hometown: 'Denver', count: 15 },
+            { hometown: 'Austin', count: 12 },
+            { hometown: 'Miami', count: 10 },
+            { hometown: 'Portland', count: 8 },
+            { hometown: 'Phoenix', count: 5 }
+        ];
+
+        const tests = [];
+        
+        function test(name, description, fn) {
+            try {
+                fn();
+                tests.push({ name, description, pass: true });
+            } catch (e) {
+                tests.push({ name, description, pass: false, error: e.message });
+            }
+        }
+
+        function assert(condition, message) {
+            if (!condition) throw new Error(message);
+        }
+
+        const maxCount = Math.max(...mockData.map(d => d.count));
+        const minCount = Math.min(...mockData.map(d => d.count));
+        const countRange = maxCount - minCount;
+
+        const wordList = mockData.map(item => {
+            const size = 12 + ((item.count - minCount) / countRange) * 36;
+            return [item.hometown, size];
+        });
+
+        WordCloud(document.getElementById('wordcloud'), {
+            list: wordList,
+            gridSize: 8,
+            weightFactor: 1,
+            fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+            color: function() {
+                const colors = ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40', '#C9CBCF'];
+                return colors[Math.floor(Math.random() * colors.length)];
+            },
+            rotateRatio: 0.3,
+            rotationSteps: 2,
+            backgroundColor: '#ffffff'
+        });
+
+        test(
+            'Data contains 10 unique hometowns',
+            'Verifies mock data has exactly 10 hometown entries',
+            () => {
+                assert(mockData.length === 10, `Expected 10 hometowns, got ${mockData.length}`);
+            }
+        );
+
+        test(
+            'Total student count calculated correctly',
+            'Verifies sum of all hometown counts equals 210',
+            () => {
+                const total = mockData.reduce((sum, item) => sum + item.count, 0);
+                assert(total === 210, `Expected total 210, got ${total}`);
+            }
+        );
+
+        test(
+            'Hometowns sorted by count descending',
+            'Verifies data is sorted highest to lowest',
+            () => {
+                for (let i = 1; i < mockData.length; i++) {
+                    assert(mockData[i].count <= mockData[i-1].count, 'Data not sorted correctly');
+                }
+            }
+        );
+
+        test(
+            'Top hometown has highest count',
+            'Verifies Chicago is the hometown with highest count of 45',
+            () => {
+                const top = mockData[0];
+                assert(top.hometown === 'Chicago' && top.count === 45, `Top hometown is ${top.hometown} with ${top.count}`);
+            }
+        );
+
+        test(
+            'Word cloud font size scaling works',
+            'Verifies highest count gets largest font size',
+            () => {
+                const largestWord = wordList.find(w => w[0] === 'Chicago');
+                const smallestWord = wordList.find(w => w[0] === 'Phoenix');
+                assert(largestWord[1] > smallestWord[1], 'Font size should scale with count');
+            }
+        );
+
+        test(
+            'Filter by hometown returns correct count',
+            'Verifies filtering for "Chicago" returns exactly 45 students',
+            () => {
+                const filtered = mockData.filter(item => item.hometown === 'Chicago');
+                const total = filtered.reduce((sum, item) => sum + item.count, 0);
+                assert(total === 45, `Expected 45, got ${total}`);
+            }
+        );
+
+        test(
+            'Hometowns with count > 20 identified',
+            'Verifies there are exactly 4 hometowns with more than 20 students',
+            () => {
+                const highCount = mockData.filter(item => item.count > 20);
+                assert(highCount.length === 4, `Expected 4, got ${highCount.length}`);
+            }
+        );
+
+        test(
+            'Average count calculated correctly',
+            'Verifies average students per hometown is 21',
+            () => {
+                const total = mockData.reduce((sum, item) => sum + item.count, 0);
+                const avg = total / mockData.length;
+                assert(avg === 21, `Expected avg 21, got ${avg}`);
+            }
+        );
+
+        test(
+            'All hometown names are strings',
+            'Verifies all hometown values are non-empty strings',
+            () => {
+                mockData.forEach((item, i) => {
+                    assert(typeof item.hometown === 'string' && item.hometown.length > 0, 
+                        `Invalid hometown at index ${i}`);
+                });
+            }
+        );
+
+        test(
+            'All counts are positive numbers',
+            'Verifies all count values are positive integers',
+            () => {
+                mockData.forEach((item, i) => {
+                    assert(typeof item.count === 'number' && item.count > 0, 
+                        `Invalid count at index ${i}`);
+                });
+            }
+        );
+
+        const resultsDiv = document.getElementById('test-results');
+        const passed = tests.filter(t => t.pass).length;
+        const total = tests.length;
+        
+        resultsDiv.innerHTML = `<h2>Results: ${passed}/${total} passed</h2>`;
+        tests.forEach(t => {
+            const div = document.createElement('div');
+            div.className = `test ${t.pass ? 'pass' : 'fail'}`;
+            div.innerHTML = `
+                <div><strong>${t.pass ? '✓' : '✗'}</strong> ${t.name}${t.error ? `: ${t.error}` : ''}</div>
+                <div class="test-desc">${t.description}</div>
+            `;
+            resultsDiv.appendChild(div);
+        });
+    </script>
+</body>
+</html>

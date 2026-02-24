@@ -249,4 +249,41 @@ class ReportsController {
         
         echo $renderer->render('division-report.twig', $templateData);
     }
+    
+    public function render_hometown_report() {
+        $renderer = new TwigRenderer();
+        $attendeeDb = new AttendeeDatabase();
+        
+        $templateData = [
+            'page_title' => 'Students by Hometown',
+            'data' => $attendeeDb->get_by_hometown()
+        ];
+        
+        echo $renderer->render('hometown-report.twig', $templateData);
+    }
+    
+    public function render_primary_school_report() {
+        $renderer = new TwigRenderer();
+        $attendeeDb = new AttendeeDatabase();
+        
+        $templateData = [
+            'page_title' => 'Students by Primary School',
+            'data' => $attendeeDb->get_by_primary_school()
+        ];
+        
+        echo $renderer->render('primary-school-report.twig', $templateData);
+    }
+    
+    public function render_gender_report() {
+        $renderer = new TwigRenderer();
+        $attendeeDb = new AttendeeDatabase();
+        
+        $templateData = [
+            'page_title' => 'Gender & Pronouns',
+            'gender_data' => $attendeeDb->get_by_gender(),
+            'pronouns_data' => $attendeeDb->get_by_pronouns()
+        ];
+        
+        echo $renderer->render('gender-report.twig', $templateData);
+    }
 }

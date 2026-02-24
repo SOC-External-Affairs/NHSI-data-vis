@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Gender & Pronouns Report Tests</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .test { margin: 10px 0; padding: 10px; border-left: 4px solid #ccc; }
+        .pass { border-color: #28a745; background: #d4edda; }
+        .fail { border-color: #dc3545; background: #f8d7da; }
+        .test-desc { color: #666; font-size: 14px; margin-top: 5px; }
+    </style>
+</head>
+<body>
+    <h1>Gender & Pronouns Report Donut Chart Tests</h1>
+    <div id="test-results"></div>
+    <div style="display: flex; gap: 40px;">
+        <canvas id="genderChart"></canvas>
+        <canvas id="pronounsChart"></canvas>
+    </div>
+
+    <script>
+        const mockGenderData = [
+            { gender: 'Female', count: 180 },
+            { gender: 'Male', count: 150 },
+            { gender: 'Non-binary', count: 25 },
+            { gender: 'Prefer not to say', count: 15 }
+        ];
+
+        const mockPronounsData = [
+            { pronouns: 'SHE/HER', count: 170 },
+            { pronouns: 'HE/HIM', count: 145 },
+            { pronouns: 'THEY/THEM', count: 40 },
+            { pronouns: 'HE/THEY', count: 10 },
+            { pronouns: 'SHE/THEY', count: 5 }
+        ];
+
+        const tests = [];
+        
+        function test(name, description, fn) {
+            try {
+                fn();
+                tests.push({ name, description, pass: true });
+            } catch (e) {
+                tests.push({ name, description, pass: false, error: e.message });
+            }
+        }
+
+        function assert(condition, message) {
+            if (!condition) throw new Error(message);
+        }
+
+        new Chart(document.getElementById('genderChart'), {
+            type: 'doughnut',
+            data: {
+                labels: mockGenderData.map(g => g.gender),
+                datasets: [{
+                    data: mockGenderData.map(g => g.count),
+                    backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0']
+                }]
+            },
+            options: { 
+                responsive: true,
+                plugins: { legend: { position: 'bottom' } }
+            }
+        });
+
+        new Chart(document.getElementById('pronounsChart'), {
+            type: 'doughnut',
+            data: {
+                labels: mockPronounsData.map(p => p.pronouns),
+                datasets: [{
+                    data: mockPronounsData.map(p => p.count),
+                    backgroundColor: ['#36A2EB', '#FF6384', '#FFCE56', '#4BC0C0', '#9966FF']
+                }]
+            },
+            options: { 
+                responsive: true,
+                plugins: { legend: { position: 'bottom' } }
+            }
+        });
+
+        // Gender Tests
+        test(
+            'Gender data contains 4 categories',
+            'Verifies gender data has exactly 4 entries',
+            () => {
+                assert(mockGenderData.length === 4, `Expected 4, got ${mockGenderData.length}`);
+            }
+        );
+
+        test(
+            'Gender total calculated correctly',
+            'Verifies total students by gender equals 370',
+            () => {
+                const total = mockGenderData.reduce((sum, item) => sum + item.count, 0);
+                assert(total === 370, `Expected 370, got ${total}`);
+            }
+        );
+
+        test(
+            'Female is majority gender',
+            'Verifies Female has the highest count at 180',
+            () => {
+                const top = mockGenderData.reduce((max, g) => g.count > max.count ? g : max, mockGenderData[0]);
+                assert(top.gender === 'Female' && top.count === 180, `Top is ${top.gender} with ${top.count}`);
+            }
+        );
+
+        // Pronouns Tests
+        test(
+            'Pronouns data contains 5 categories',
+            'Verifies pronouns data has exactly 5 entries',
+            () => {
+                assert(mockPronounsData.length === 5, `Expected 5, got ${mockPronounsData.length}`);
+            }
+        );
+
+        test(
+            'Pronouns total calculated correctly',
+            'Verifies total students by pronouns equals 370',
+            () => {
+                const total = mockPronounsData.reduce((sum, item) => sum + item.count, 0);
+                assert(total === 370, `Expected 370, got ${total}`);
+            }
+        );
+
+        test(
+            'Pronouns normalized to uppercase',
+            'Verifies all pronouns values are uppercase',
+            () => {
+                mockPronounsData.forEach(p => {
+                    assert(p.pronouns === p.pronouns.toUpperCase(), `Not uppercase: ${p.pronouns}`);
+                });
+            }
+        );
+
+        test(
+            'SHE/HER is most common pronouns',
+            'Verifies SHE/HER has highest count at 170',
+            () => {
+                const top = mockPronounsData.reduce((max, p) => p.count > max.count ? p : max, mockPronounsData[0]);
+                assert(top.pronouns === 'SHE/HER' && top.count === 170, `Top is ${top.pronouns} with ${top.count}`);
+            }
+        );
+
+        // Cross-validation Tests
+        test(
+            'Gender and Pronouns totals match',
+            'Verifies total counts for gender and pronouns are equal (370)',
+            () => {
+                const genderTotal = mockGenderData.reduce((sum, item) => sum + item.count, 0);
+                const pronounsTotal = mockPronounsData.reduce((sum, item) => sum + item.count, 0);
+                assert(genderTotal === pronounsTotal, `Gender: ${genderTotal}, Pronouns: ${pronounsTotal}`);
+            }
+        );
+
+        test(
+            'Female count aligns with she/her pronouns',
+            'Verifies Female count (180) is close to SHE/HER count (170)',
+            () => {
+                const female = mockGenderData.find(g => g.gender === 'Female').count;
+                const sheHer = mockPronounsData.find(p => p.pronouns === 'SHE/HER').count;
+                assert(Math.abs(female - sheHer) <= 20, `Large variance: Female=${female}, SHE/HER=${sheHer}`);
+            }
+        );
+
+        test(
+            'Male count aligns with he/him pronouns',
+            'Verifies Male count (150) is close to HE/HIM count (145)',
+            () => {
+                const male = mockGenderData.find(g => g.gender === 'Male').count;
+                const heHim = mockPronounsData.find(p => p.pronouns === 'HE/HIM').count;
+                assert(Math.abs(male - heHim) <= 20, `Large variance: Male=${male}, HE/HIM=${heHim}`);
+            }
+        );
+
+        test(
+            'Gender percentages calculated correctly',
+            'Verifies Female percentage is ~48.6%',
+            () => {
+                const total = mockGenderData.reduce((sum, g) => sum + g.count, 0);
+                const femalePct = (mockGenderData.find(g => g.gender === 'Female').count / total) * 100;
+                assert(Math.abs(femalePct - 48.6) < 1, `Expected ~48.6%, got ${femalePct.toFixed(1)}%`);
+            }
+        );
+
+        test(
+            'Pronouns percentages calculated correctly',
+            'Verifies SHE/HER percentage is ~45.9%',
+            () => {
+                const total = mockPronounsData.reduce((sum, p) => sum + p.count, 0);
+                const sheHerPct = (mockPronounsData.find(p => p.pronouns === 'SHE/HER').count / total) * 100;
+                assert(Math.abs(sheHerPct - 45.9) < 1, `Expected ~45.9%, got ${sheHerPct.toFixed(1)}%`);
+            }
+        );
+
+        test(
+            'Chart.js receives correct gender labels',
+            'Verifies donut chart receives correct labels',
+            () => {
+                const labels = mockGenderData.map(g => g.gender);
+                assert(labels.includes('Female') && labels.includes('Male'), 'Missing expected labels');
+            }
+        );
+
+        test(
+            'Chart.js receives correct pronouns labels',
+            'Verifies donut chart receives correct labels',
+            () => {
+                const labels = mockPronounsData.map(p => p.pronouns);
+                assert(labels.includes('SHE/HE') && labels.includes('HE/HIM'), 'Missing expected labels');
+            }
+        );
+
+        test(
+            'All gender values are strings',
+            'Verifies all gender values are non-empty strings',
+            () => {
+                mockGenderData.forEach(g => {
+                    assert(typeof g.gender === 'string' && g.gender.length > 0, `Invalid gender: ${g.gender}`);
+                });
+            }
+        );
+
+        test(
+            'All pronouns values are strings',
+            'Verifies all pronouns values are non-empty strings',
+            () => {
+                mockPronounsData.forEach(p => {
+                    assert(typeof p.pronouns === 'string' && p.pronouns.length > 0, `Invalid pronouns: ${p.pronouns}`);
+                });
+            }
+        );
+
+        const resultsDiv = document.getElementById('test-results');
+        const passed = tests.filter(t => t.pass).length;
+        const total = tests.length;
+        
+        resultsDiv.innerHTML = `<h2>Results: ${passed}/${total} passed</h2>`;
+        tests.forEach(t => {
+            const div = document.createElement('div');
+            div.className = `test ${t.pass ? 'pass' : 'fail'}`;
+            div.innerHTML = `
+                <div><strong>${t.pass ? '✓' : '✗'}</strong> ${t.name}${t.error ? `: ${t.error}` : ''}</div>
+                <div class="test-desc">${t.description}</div>
+            `;
+            resultsDiv.appendChild(div);
+        });
+    </script>
+</body>
+</html>

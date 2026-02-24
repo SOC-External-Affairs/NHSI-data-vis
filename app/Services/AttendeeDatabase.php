@@ -197,7 +197,57 @@ class AttendeeDatabase {
     public function get_waterfall_data() {
         global $wpdb;
         $table_name = $wpdb->prefix . 'attendee_records';
-        return $wpdb->get_results("SELECT year_attended, home_state, division, primary_major, COUNT(*) as count FROM $table_name WHERE year_attended IS NOT NULL AND year_attended != '' AND home_state IS NOT NULL AND home_state != '' AND division IS NOT NULL AND division != '' AND (home_country LIKE '%United States%' OR home_country LIKE '%USA%' OR home_country LIKE '%US%' OR home_country = '' OR home_country IS NULL OR home_state IN ('Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorado', 'Connecticut', 'Delaware', 'Florida', 'Georgia', 'Hawaii', 'Idaho', 'Illinois', 'Indiana', 'Iowa', 'Kansas', 'Kentucky', 'Louisiana', 'Maine', 'Maryland', 'Massachusetts', 'Michigan', 'Minnesota', 'Mississippi', 'Missouri', 'Montana', 'Nebraska', 'Nevada', 'New Hampshire', 'New Jersey', 'New Mexico', 'New York', 'North Carolina', 'North Dakota', 'Ohio', 'Oklahoma', 'Oregon', 'Pennsylvania', 'Rhode Island', 'South Carolina', 'South Dakota', 'Tennessee', 'Texas', 'Utah', 'Vermont', 'Virginia', 'Washington', 'West Virginia', 'Wisconsin', 'Wyoming', 'District of Columbia', 'Puerto Rico', 'Guam', 'American Samoa', 'U.S. Virgin Islands', 'Northern Mariana Islands', 'AL', 'AK', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DE', 'FL', 'GA', 'HI', 'ID', 'IL', 'IN', 'IA', 'KS', 'KY', 'LA', 'ME', 'MD', 'MA', 'MI', 'MN', 'MS', 'MO', 'MT', 'NE', 'NV', 'NH', 'NJ', 'NM', 'NY', 'NC', 'ND', 'OH', 'OK', 'OR', 'PA', 'RI', 'SC', 'SD', 'TN', 'TX', 'UT', 'VT', 'VA', 'WA', 'WV', 'WI', 'WY', 'DC', 'PR', 'GU', 'AS', 'VI', 'MP')) GROUP BY year_attended, home_state, division, primary_major ORDER BY year_attended, home_state, division");
+        return $wpdb->get_results("SELECT year_attended, home_state, division, primary_major, COUNT(*) as count FROM $table_name WHERE year_attended IS NOT NULL AND year_attended != '' AND home_state IS NOT NULL AND home_state != '' AND division IS NOT NULL AND division != '' AND (home_country LIKE '%United States%' OR home_country LIKE '%USA%' OR home_country LIKE '%US%' OR home_country = '' OR home_country IS NOT NULL OR home_state IN ('Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorado', 'Connecticut', 'Delaware', 'Florida', 'Georgia', 'Hawaii', 'Idaho', 'Illinois', 'Indiana', 'Iowa', 'Kansas', 'Kentucky', 'Louisiana', 'Maine', 'Maryland', 'Massachusetts', 'Michigan', 'Minnesota', 'Mississippi', 'Missouri', 'Montana', 'Nebraska', 'Nevada', 'New Hampshire', 'New Jersey', 'New Mexico', 'New York', 'North Carolina', 'North Dakota', 'Ohio', 'Oklahoma', 'Oregon', 'Pennsylvania', 'Rhode Island', 'South Carolina', 'South Dakota', 'Tennessee', 'Texas', 'Utah', 'Vermont', 'Virginia', 'Washington', 'West Virginia', 'Wisconsin', 'Wyoming', 'District of Columbia', 'Puerto Rico', 'Guam', 'American Samoa', 'U.S. Virgin Islands', 'Northern Mariana Islands', 'AL', 'AK', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DE', 'FL', 'GA', 'HI', 'ID', 'IL', 'IN', 'IA', 'KS', 'KY', 'LA', 'ME', 'MD', 'MA', 'MI', 'MN', 'MS', 'MO', 'MT', 'NE', 'NV', 'NH', 'NJ', 'NM', 'NY', 'NC', 'ND', 'OH', 'OK', 'OR', 'PA', 'RI', 'SC', 'SD', 'TN', 'TX', 'UT', 'VT', 'VA', 'WA', 'WV', 'WI', 'WY', 'DC', 'PR', 'GU', 'AS', 'VI', 'MP')) GROUP BY year_attended, home_state, division, primary_major ORDER BY year_attended, home_state, division");
+    }
+    
+    public function get_by_hometown() {
+        global $wpdb;
+        $table_name = $wpdb->prefix . 'attendee_records';
+        return $wpdb->get_results("
+            SELECT hometown, COUNT(*) as count 
+            FROM $table_name 
+            WHERE hometown IS NOT NULL AND hometown != '' 
+            GROUP BY hometown 
+            ORDER BY count DESC 
+            LIMIT 100
+        ");
+    }
+    
+    public function get_by_primary_school() {
+        global $wpdb;
+        $table_name = $wpdb->prefix . 'attendee_records';
+        return $wpdb->get_results("
+            SELECT primary_school, COUNT(*) as count 
+            FROM $table_name 
+            WHERE primary_school IS NOT NULL AND primary_school != '' 
+            GROUP BY primary_school 
+            ORDER BY count DESC 
+            LIMIT 50
+        ");
+    }
+    
+    public function get_by_gender() {
+        global $wpdb;
+        $table_name = $wpdb->prefix . 'attendee_records';
+        return $wpdb->get_results("
+            SELECT gender, COUNT(*) as count 
+            FROM $table_name 
+            WHERE gender IS NOT NULL AND gender != '' 
+            GROUP BY gender 
+            ORDER BY count DESC
+        ");
+    }
+    
+    public function get_by_pronouns() {
+        global $wpdb;
+        $table_name = $wpdb->prefix . 'attendee_records';
+        return $wpdb->get_results("
+            SELECT TRIM(UPPER(pronouns)) as pronouns, COUNT(*) as count 
+            FROM $table_name 
+            WHERE pronouns IS NOT NULL AND pronouns != '' 
+            GROUP BY TRIM(UPPER(pronouns))
+            ORDER BY count DESC
+        ");
     }
     
     // Find duplicate records across multiple identifying fields

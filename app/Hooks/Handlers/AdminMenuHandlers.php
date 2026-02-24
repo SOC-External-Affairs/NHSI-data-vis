@@ -128,6 +128,33 @@ class AdminMenuHandlers {
         
         add_submenu_page(
             "excel-uploader-dashboard-menu",
+            __("Hometown Report","excel-uploader"),
+            __("Hometown Report","excel-uploader"),
+            "manage_options",
+            "hometown-report",
+            [$this, 'render_hometown_report']
+        );
+        
+        add_submenu_page(
+            "excel-uploader-dashboard-menu",
+            __("Primary School Report","excel-uploader"),
+            __("Primary School Report","excel-uploader"),
+            "manage_options",
+            "primary-school-report",
+            [$this, 'render_primary_school_report']
+        );
+        
+        add_submenu_page(
+            "excel-uploader-dashboard-menu",
+            __("Gender & Pronouns","excel-uploader"),
+            __("Gender & Pronouns","excel-uploader"),
+            "manage_options",
+            "gender-report",
+            [$this, 'render_gender_report']
+        );
+        
+        add_submenu_page(
+            "excel-uploader-dashboard-menu",
             __("Check Duplicates","excel-uploader"),
             __("Check Duplicates","excel-uploader"),
             "manage_options",
@@ -140,7 +167,7 @@ class AdminMenuHandlers {
             __("Run Tests","excel-uploader"),
             __("Run Tests","excel-uploader"),
             "manage_options",
-            "run-tests",
+            "excel-uploader-run-tests",
             [$this, 'render_tests']
         );
     }
@@ -208,10 +235,29 @@ class AdminMenuHandlers {
         $controller->render_division_report();
     }
     
+    public function render_hometown_report() {
+        $controller = new \ExcelUploader\Controllers\ReportsController();
+        $controller->render_hometown_report();
+    }
+    
+    public function render_primary_school_report() {
+        $controller = new \ExcelUploader\Controllers\ReportsController();
+        $controller->render_primary_school_report();
+    }
+    
+    public function render_gender_report() {
+        $controller = new \ExcelUploader\Controllers\ReportsController();
+        $controller->render_gender_report();
+    }
+    
     public function render_tests() {
-        $testFile = EXCEL_UPLOADER_PATH . '/tests/browser/division-report.test.html';
+        $testFile = EXCEL_UPLOADER_PATH . '/tests/browser/index.html';
         if (file_exists($testFile)) {
-            readfile($testFile);
+            $content = file_get_contents($testFile);
+            $testUrl = plugins_url('tests/browser/', EXCEL_UPLOADER_PATH . '/excel-uploader.php');
+            $content = str_replace('href="', 'href="' . $testUrl, $content);
+            $content = str_replace('max-width: 800px;', 'max-width: 100%;', $content);
+            echo '<div class="wrap">' . $content . '</div>';
         } else {
             echo '<div class="wrap"><h1>Test file not found</h1></div>';
         }

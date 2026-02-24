@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Primary School Report Tests</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .test { margin: 10px 0; padding: 10px; border-left: 4px solid #ccc; }
+        .pass { border-color: #28a745; background: #d4edda; }
+        .fail { border-color: #dc3545; background: #f8d7da; }
+        .test-desc { color: #666; font-size: 14px; margin-top: 5px; }
+    </style>
+</head>
+<body>
+    <h1>Primary School Report Bar Chart Tests</h1>
+    <div id="test-results"></div>
+    <canvas id="schoolChart"></canvas>
+
+    <script>
+        const mockData = [
+            { primary_school: 'Northwestern University', count: 120 },
+            { primary_school: 'University of Chicago', count: 95 },
+            { primary_school: 'Harvard University', count: 80 },
+            { primary_school: 'Stanford University', count: 65 },
+            { primary_school: 'MIT', count: 50 },
+            { primary_school: 'Yale University', count: 40 },
+            { primary_school: 'Princeton University', count: 35 },
+            { primary_school: 'Columbia University', count: 28 },
+            { primary_school: 'Duke University', count: 22 },
+            { primary_school: 'Cornell University', count: 15 }
+        ];
+
+        const tests = [];
+        
+        function test(name, description, fn) {
+            try {
+                fn();
+                tests.push({ name, description, pass: true });
+            } catch (e) {
+                tests.push({ name, description, pass: false, error: e.message });
+            }
+        }
+
+        function assert(condition, message) {
+            if (!condition) throw new Error(message);
+        }
+
+        new Chart(document.getElementById('schoolChart'), {
+            type: 'bar',
+            data: {
+                labels: mockData.map(s => s.primary_school),
+                datasets: [{
+                    label: 'Students',
+                    data: mockData.map(s => s.count),
+                    backgroundColor: '#36A2EB',
+                    borderColor: '#2484c6',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                plugins: { legend: { display: false } }
+            }
+        });
+
+        test(
+            'Data contains 10 schools',
+            'Verifies mock data has exactly 10 primary school entries',
+            () => {
+                assert(mockData.length === 10, `Expected 10 schools, got ${mockData.length}`);
+            }
+        );
+
+        test(
+            'Total students calculated correctly',
+            'Verifies sum of all counts equals 550',
+            () => {
+                const total = mockData.reduce((sum, item) => sum + item.count, 0);
+                assert(total === 550, `Expected total 550, got ${total}`);
+            }
+        );
+
+        test(
+            'Schools sorted by count descending',
+            'Verifies data is sorted highest to lowest',
+            () => {
+                for (let i = 1; i < mockData.length; i++) {
+                    assert(mockData[i].count <= mockData[i-1].count, 'Data not sorted correctly');
+                }
+            }
+        );
+
+        test(
+            'Top school has highest count',
+            'Verifies Northwestern University has highest count of 120',
+            () => {
+                const top = mockData[0];
+                assert(top.primary_school === 'Northwestern University' && top.count === 120, 
+                    `Top school is ${top.primary_school} with ${top.count}`);
+            }
+        );
+
+        test(
+            'Chart labels match school names',
+            'Verifies Chart.js receives correct labels',
+            () => {
+                const labels = mockData.map(s => s.primary_school);
+                assert(labels.length === mockData.length, 'Labels count mismatch');
+                assert(labels[0] === 'Northwestern University', 'First label incorrect');
+            }
+        );
+
+        test(
+            'Chart data matches counts',
+            'Verifies Chart.js receives correct data values',
+            () => {
+                const data = mockData.map(s => s.count);
+                assert(data[0] === 120, 'First data point incorrect');
+                assert(data[data.length - 1] === 15, 'Last data point incorrect');
+            }
+        );
+
+        test(
+            'Filter by school returns correct count',
+            'Verifies filtering for "MIT" returns exactly 50 students',
+            () => {
+                const filtered = mockData.filter(item => item.primary_school === 'MIT');
+                const total = filtered.reduce((sum, item) => sum + item.count, 0);
+                assert(total === 50, `Expected 50, got ${total}`);
+            }
+        );
+
+        test(
+            'Schools with count > 50 identified',
+            'Verifies there are exactly 4 schools with more than 50 students',
+            () => {
+                const highCount = mockData.filter(item => item.count > 50);
+                assert(highCount.length === 4, `Expected 4, got ${highCount.length}`);
+            }
+        );
+
+        test(
+            'Average students per school calculated',
+            'Verifies average students per school is 55',
+            () => {
+                const total = mockData.reduce((sum, item) => sum + item.count, 0);
+                const avg = total / mockData.length;
+                assert(avg === 55, `Expected avg 55, got ${avg}`);
+            }
+        );
+
+        test(
+            'Median count calculated correctly',
+            'Verifies median count is between 40-50',
+            () => {
+                const sorted = [...mockData].sort((a, b) => a.count - b.count);
+                const mid = Math.floor(sorted.length / 2);
+                const median = sorted.length % 2 !== 0 ? sorted[mid].count : (sorted[mid - 1].count + sorted[mid].count) / 2;
+                assert(median >= 40 && median <= 50, `Median ${median} not in expected range`);
+            }
+        );
+
+        test(
+            'All school names are strings',
+            'Verifies all school name values are non-empty strings',
+            () => {
+                mockData.forEach((item, i) => {
+                    assert(typeof item.primary_school === 'string' && item.primary_school.length > 0, 
+                        `Invalid school at index ${i}`);
+                });
+            }
+        );
+
+        test(
+            'All counts are positive numbers',
+            'Verifies all count values are positive integers',
+            () => {
+                mockData.forEach((item, i) => {
+                    assert(typeof item.count === 'number' && item.count > 0, 
+                        `Invalid count at index ${i}`);
+                });
+            }
+        );
+
+        const resultsDiv = document.getElementById('test-results');
+        const passed = tests.filter(t => t.pass).length;
+        const total = tests.length;
+        
+        resultsDiv.innerHTML = `<h2>Results: ${passed}/${total} passed</h2>`;
+        tests.forEach(t => {
+            const div = document.createElement('div');
+            div.className = `test ${t.pass ? 'pass' : 'fail'}`;
+            div.innerHTML = `
+                <div><strong>${t.pass ? '✓' : '✗'}</strong> ${t.name}${t.error ? `: ${t.error}` : ''}</div>
+                <div class="test-desc">${t.description}</div>
+            `;
+            resultsDiv.appendChild(div);
+        });
+    </script>
+</body>
+</html>

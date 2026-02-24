@@ -1,0 +1,82 @@
+<div class="wrap">
+    <h1>{{ page_title }}</h1>
+    <script src="https://cdn.jsdelivr.net/npm/wordcloud@1.2.2/src/wordcloud2.min.js"></script>
+    {% include 'report-styles.twig' %}
+
+    <div class="postbox">
+        <div class="inside">
+            {% if data %}
+                <div class="wordcloud-container">
+                    <canvas id="hometownCloud" width="800" height="500"></canvas>
+                </div>
+                <table class="wp-list-table widefat striped">
+                    <thead>
+                        <tr>
+                            <th>Hometown</th>
+                            <th>Count</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for hometown in data %}
+                            <tr>
+                                <td>{{ hometown.hometown }}</td>
+                                <td><strong>{{ hometown.count }}</strong></td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <p>No hometown data available.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+.wordcloud-container {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+#hometownCloud {
+    max-width: 100%;
+}
+</style>
+
+<script>
+{% if data %}
+{% set maxCount = 0 %}
+{% for hometown in data %}
+    {% if hometown.count > maxCount %}{% set maxCount = hometown.count %}{% endif %}
+{% endfor %}
+
+var wordList = [
+    {% for hometown in data %}
+    ['{{ hometown.hometown|e }}', {{ hometown.count }}]{% if not loop.last %},{% endif %}
+    {% endfor %}
+];
+
+var minCount = wordList[wordList.length - 1][1];
+var countRange = {{ maxCount }} - minCount;
+
+wordList = wordList.map(function(item) {
+    var size = 12 + ((item[1] - minCount) / countRange) * 36;
+    return [item[0], size];
+});
+
+WordCloud(document.getElementById('hometownCloud'), {
+    list: wordList,
+    gridSize: 8,
+    weightFactor: 1,
+    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+    color: function() {
+        var colors = ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40', '#C9CBCF'];
+        return colors[Math.floor(Math.random() * colors.length)];
+    },
+    rotateRatio: 0.3,
+    rotationSteps: 2,
+    backgroundColor: '#ffffff'
+});
+{% endif %}
+</script>

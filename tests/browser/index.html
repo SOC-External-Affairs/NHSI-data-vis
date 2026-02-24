@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Excel Uploader Test Suite</title>
+    <style>
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+            padding: 40px; 
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        h1 { color: #1d2327; }
+        .test-list { list-style: none; padding: 0; }
+        .test-list li { 
+            margin: 15px 0; 
+            padding: 20px; 
+            border: 1px solid #ddd; 
+            border-radius: 8px;
+            background: #f6f7f7;
+        }
+        .test-list a { 
+            text-decoration: none; 
+            color: #2271b1;
+            font-size: 18px;
+            font-weight: 600;
+        }
+        .test-list a:hover { color: #135e96; }
+        .test-desc { 
+            color: #646970; 
+            margin-top: 5px; 
+        }
+    </style>
+</head>
+<body>
+    <h1>Excel Uploader Test Suite</h1>
+    <p>Select a test to run:</p>
+    <ul class="test-list">
+        <li>
+            <a href="division-report.test.html" target="_blank">Division Report (Sankey)</a>
+            <div class="test-desc">Tests Sankey diagram node/link counts, filtering, and data aggregation</div>
+        </li>
+        <li>
+            <a href="hometown-report.test.html" target="_blank">Hometown Report (Word Cloud)</a>
+            <div class="test-desc">Tests word cloud rendering, font scaling, and hometown data aggregation</div>
+        </li>
+        <li>
+            <a href="primary-school-report.test.html" target="_blank">Primary School Report (Bar Chart)</a>
+            <div class="test-desc">Tests horizontal bar chart rendering and school data aggregation</div>
+        </li>
+        <li>
+            <a href="gender-report.test.html" target="_blank">Gender & Pronouns Report (Donut Charts)</a>
+            <div class="test-desc">Tests dual donut charts, data normalization, and cross-validation</div>
+        </li>
+    </ul>
+</body>
+</html>

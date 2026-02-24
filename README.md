@@ -83,16 +83,19 @@ These columns will be completely ignored during import:
    - Sort by any column (click column headers)
    - Delete individual records (red Delete button with confirmation)
    - Delete all records (bulk delete with confirmation)
-6. Generate reports from **Reports** submenu:
-   - Students by Cell Phone (Area Code)
-   - International Students by Country
-   - Domestic Students by State
-   - Students by Zip Code
-   - Students by Primary Major
-   - State Trends by Year (interactive line chart)
-   - Country Trends by Year (interactive line chart)
-7. Check for duplicate records using **Check Duplicates** menu
-8. Run automated tests via **Run Tests** menu to validate report accuracy
+ 6. Generate reports from **Reports** submenu:
+    - Students by Cell Phone (Area Code)
+    - International Students by Country
+    - Domestic Students by State
+    - Students by Zip Code
+    - Students by Primary Major
+    - State Trends by Year (interactive line chart)
+    - Country Trends by Year (interactive line chart)
+    - Students by Hometown (word cloud visualization)
+    - Students by Primary School (horizontal bar chart)
+    - Gender & Pronouns (dual donut charts)
+ 7. Check for duplicate records using **Check Duplicates** menu
+ 8. Run automated tests via **Run Tests** menu to validate report accuracy
 
 ## Testing
 
@@ -101,6 +104,9 @@ Browser-based tests are available to validate report calculations and visual flo
 - Navigate to **Excel Uploader → Run Tests** in WordPress admin
 - Tests validate:
   - Sankey chart node and link counts
+  - Word cloud rendering and font scaling
+  - Bar chart data aggregation
+  - Donut chart distribution and normalization
   - Data aggregation accuracy
   - Filter logic (state, year, division)
   - Visual positioning and proportions
