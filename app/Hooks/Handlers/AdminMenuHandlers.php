@@ -65,15 +65,6 @@ class AdminMenuHandlers {
         
         add_submenu_page(
             "excel-uploader-dashboard-menu",
-            __("Cell Phone Report","excel-uploader"),
-            __("Cell Phone Report","excel-uploader"),
-            "manage_options",
-            "cell-phone-report",
-            [$this, 'render_cell_phone_report']
-        );
-        
-        add_submenu_page(
-            "excel-uploader-dashboard-menu",
             __("Country Report","excel-uploader"),
             __("Country Report","excel-uploader"),
             "manage_options",
@@ -88,15 +79,6 @@ class AdminMenuHandlers {
             "manage_options",
             "state-report",
             [$this, 'render_state_report']
-        );
-        
-        add_submenu_page(
-            "excel-uploader-dashboard-menu",
-            __("Zip Code Report","excel-uploader"),
-            __("Zip Code Report","excel-uploader"),
-            "manage_options",
-            "zip-code-report",
-            [$this, 'render_zip_report']
         );
         
         add_submenu_page(
@@ -199,11 +181,6 @@ class AdminMenuHandlers {
         $controller->render_list();
     }
     
-    public function render_cell_phone_report() {
-        $controller = new \ExcelUploader\Controllers\ReportsController();
-        $controller->render_cell_phone_report();
-    }
-    
     public function render_country_report() {
         $controller = new \ExcelUploader\Controllers\ReportsController();
         $controller->render_country_report();
@@ -212,11 +189,6 @@ class AdminMenuHandlers {
     public function render_state_report() {
         $controller = new \ExcelUploader\Controllers\ReportsController();
         $controller->render_state_report();
-    }
-    
-    public function render_zip_report() {
-        $controller = new \ExcelUploader\Controllers\ReportsController();
-        $controller->render_zip_report();
     }
     
     public function render_major_report() {

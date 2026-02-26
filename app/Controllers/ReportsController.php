@@ -10,21 +10,6 @@ use ExcelUploader\Services\AttendeeDatabase;
 class ReportsController {
 
     /**
-     * Render cell phone report
-     */
-    public function render_cell_phone_report() {
-        $renderer = new TwigRenderer();
-        $attendeeDb = new AttendeeDatabase();
-        
-        $templateData = [
-            'page_title' => 'Students by Cell Phone',
-            'data' => $attendeeDb->get_by_area_code()
-        ];
-        
-        echo $renderer->render('cell-phone-report.twig', $templateData);
-    }
-    
-    /**
      * Render country report
      */
     public function render_country_report() {
@@ -52,21 +37,6 @@ class ReportsController {
         ];
         
         echo $renderer->render('state-report.twig', $templateData);
-    }
-    
-    /**
-     * Render zip code report
-     */
-    public function render_zip_report() {
-        $renderer = new TwigRenderer();
-        $attendeeDb = new AttendeeDatabase();
-        
-        $templateData = [
-            'page_title' => 'Domestic Students by Zip Code',
-            'data' => $attendeeDb->get_domestic_by_zip()
-        ];
-        
-        echo $renderer->render('zip-report.twig', $templateData);
     }
     
     /**
@@ -279,9 +249,8 @@ class ReportsController {
         $attendeeDb = new AttendeeDatabase();
         
         $templateData = [
-            'page_title' => 'Gender & Pronouns',
-            'gender_data' => $attendeeDb->get_by_gender(),
-            'pronouns_data' => $attendeeDb->get_by_pronouns()
+            'page_title' => 'Gender',
+            'gender_data' => $attendeeDb->get_by_gender()
         ];
         
         echo $renderer->render('gender-report.twig', $templateData);
