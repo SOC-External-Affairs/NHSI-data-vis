@@ -237,7 +237,8 @@ class AdminMenuHandlers {
             $content = file_get_contents($testFile);
             $testUrl = plugins_url('tests/browser/', EXCEL_UPLOADER_PATH . '/excel-uploader.php');
             $content = str_replace('href="', 'href="' . $testUrl, $content);
-            $content = str_replace('max-width: 800px;', 'max-width: 100%;', $content);
+            $content = str_replace('max-width: 100%;', 'max-width: 100%; padding: 0;', $content);
+            $content = str_replace('<body>', '<body style="margin: 0; padding: 0;">', $content);
             echo '<div class="wrap">' . $content . '</div>';
         } else {
             echo '<div class="wrap"><h1>Test file not found</h1></div>';

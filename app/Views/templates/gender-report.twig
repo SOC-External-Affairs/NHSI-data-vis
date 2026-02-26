@@ -5,7 +5,7 @@
 
     <div class="postbox">
         <div class="inside">
-            <div class="donut-chart" style="max-width: 450px; margin: 0 auto;">
+            <div class="donut-chart" style="max-width: 450px; height: 400px; margin: 0 auto;">
                 {% if gender_data %}
                     <canvas id="genderChart"></canvas>
                     <table class="wp-list-table widefat striped">
@@ -27,6 +27,7 @@
 </div>
 
 <script>
+document.addEventListener('DOMContentLoaded', function() {
 {% if gender_data %}
 new Chart(document.getElementById('genderChart'), {
     type: 'doughnut',
@@ -48,4 +49,5 @@ new Chart(document.getElementById('genderChart'), {
     }
 });
 {% endif %}
+});
 </script>
