@@ -137,8 +137,8 @@ class AdminMenuHandlers {
         
         add_submenu_page(
             "excel-uploader-dashboard-menu",
-            __("Gender & Pronouns","excel-uploader"),
-            __("Gender & Pronouns","excel-uploader"),
+            __("Gender","excel-uploader"),
+            __("Gender","excel-uploader"),
             "manage_options",
             "gender-report",
             [$this, 'render_gender_report']
