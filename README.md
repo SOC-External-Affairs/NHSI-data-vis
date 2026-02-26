@@ -84,16 +84,15 @@ These columns will be completely ignored during import:
    - Delete individual records (red Delete button with confirmation)
    - Delete all records (bulk delete with confirmation)
  6. Generate reports from **Reports** submenu:
-    - Students by Cell Phone (Area Code)
-    - International Students by Country
-    - Domestic Students by State
-    - Students by Zip Code
-    - Students by Primary Major
-    - State Trends by Year (interactive line chart)
-    - Country Trends by Year (interactive line chart)
-    - Students by Hometown (word cloud visualization)
-    - Students by Primary School (horizontal bar chart)
-    - Gender & Pronouns (dual donut charts)
+     - International Students by Country
+     - Domestic Students by State
+     - Students by Primary Major
+     - State Trends by Year (interactive line chart)
+     - Country Trends by Year (interactive line chart)
+     - Division Flow: Year → State → Division (interactive Sankey diagram)
+     - Students by Hometown (word cloud visualization)
+     - Students by Primary School (horizontal bar chart)
+     - Gender (donut chart)
  7. Check for duplicate records using **Check Duplicates** menu
  8. Run automated tests via **Run Tests** menu to validate report accuracy
 
@@ -106,7 +105,7 @@ Browser-based tests are available to validate report calculations and visual flo
   - Sankey chart node and link counts
   - Word cloud rendering and font scaling
   - Bar chart data aggregation
-  - Donut chart distribution and normalization
+   - Donut chart distribution (gender data)
   - Data aggregation accuracy
   - Filter logic (state, year, division)
   - Visual positioning and proportions
