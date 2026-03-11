@@ -67,7 +67,7 @@
                         <th><a href="?page=attendee-records&sort=primary_school&order={{ _GET.sort == 'primary_school' and _GET.order == 'asc' ? 'desc' : 'asc' }}" style="text-decoration: none; color: inherit;">Primary School {{ _GET.sort == 'primary_school' ? (_GET.order == 'asc' ? '↑' : '↓') : '' }}</a></th>
                         <th><a href="?page=attendee-records&sort=primary_major&order={{ _GET.sort == 'primary_major' and _GET.order == 'asc' ? 'desc' : 'asc' }}" style="text-decoration: none; color: inherit;">Primary Major {{ _GET.sort == 'primary_major' ? (_GET.order == 'asc' ? '↑' : '↓') : '' }}</a></th>
                         <th><a href="?page=attendee-records&sort=created_at&order={{ _GET.sort == 'created_at' and _GET.order == 'asc' ? 'desc' : 'asc' }}" style="text-decoration: none; color: inherit;">Created {{ _GET.sort == 'created_at' ? (_GET.order == 'asc' ? '↑' : '↓') : '' }}</a></th>
-                        <th>Delete</th>
+                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -95,7 +95,8 @@
                             <td>{{ attendee.primary_major }}</td>
                             <td>{{ attendee.created_at }}</td>
                             <td>
-                                <form method="post" action="{{ delete_single_url }}" style="margin: 0;" onsubmit="return confirm('Are you sure you want to delete this attendee record? This cannot be undone!')">
+                                <a href="{{ attendee.edit_url }}" class="button button-small" style="font-size: 11px; padding: 2px 8px;">Edit</a>
+                                <form method="post" action="{{ delete_single_url }}" style="margin: 0; display: inline-block;" onsubmit="return confirm('Are you sure you want to delete this attendee record? This cannot be undone!')">
                                     {{ attendee.delete_nonce|raw }}
                                     <input type="hidden" name="action" value="delete_attendee">
                                     <input type="hidden" name="attendee_id" value="{{ attendee.id }}">

@@ -63,6 +63,16 @@ class AdminMenuHandlers {
             [$this, 'render_attendee_list']
         );
         
+        // Hidden submenu for editing attendees (accessible via Edit button in attendee list)
+        add_submenu_page(
+            "excel-uploader-dashboard-menu",
+            __("Edit Attendee","excel-uploader"),
+            "",
+            "manage_options",
+            "edit-attendee",
+            [$this, 'render_edit_attendee']
+        );
+        
         add_submenu_page(
             "excel-uploader-dashboard-menu",
             __("Country Report","excel-uploader"),
@@ -179,6 +189,11 @@ class AdminMenuHandlers {
     public function render_attendee_list() {
         $controller = new \ExcelUploader\Controllers\AttendeeCrudController();
         $controller->render_list();
+    }
+    
+    public function render_edit_attendee() {
+        $controller = new \ExcelUploader\Controllers\AttendeeCrudController();
+        $controller->edit_form();
     }
     
     public function render_country_report() {

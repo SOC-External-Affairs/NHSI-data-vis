@@ -15,6 +15,7 @@ class AttendeeCrudController {
     public function __construct() {
         add_action('admin_post_delete_all_attendees', [$this, 'delete_all']);
         add_action('admin_post_delete_attendee', [$this, 'delete_single']);
+        add_action('admin_post_update_attendee', [$this, 'update_attendee']);
     }
 
     /**
@@ -35,6 +36,7 @@ class AttendeeCrudController {
         // Generate nonces for each attendee
         foreach ($attendees as $attendee) {
             $attendee->delete_nonce = wp_nonce_field('delete_attendee_' . $attendee->id, '_wpnonce', true, false);
+            $attendee->edit_url = admin_url('admin.php?page=edit-attendee&id=' . $attendee->id);
         }
         
         $templateData = [
@@ -49,6 +51,62 @@ class AttendeeCrudController {
         ];
         
         echo $renderer->render('attendee-list.twig', $templateData);
+    }
+
+    public function edit_form() {
+        if (!current_user_can('manage_options')) {
+            wp_die('Unauthorized');
+        }
+        
+        $attendee_id = intval($_GET['id'] ?? 0);
+        $attendeeDb = new AttendeeDatabase();
+        $attendee = $attendeeDb->get_attendee($attendee_id);
+        
+        if (!$attendee) {
+            wp_die('Attendee not found');
+        }
+        
+        $renderer = new TwigRenderer();
+        
+        $templateData = [
+            'attendee' => $attendee,
+            'update_url' => admin_url('admin-post.php'),
+            'nonce' => wp_nonce_field('update_attendee_' . $attendee_id, '_wpnonce', true, false)
+        ];
+        
+        echo $renderer->render('edit-attendee.twig', $templateData);
+    }
+
+    public function update_attendee() {
+        if (!current_user_can('manage_options')) {
+            wp_die('Unauthorized');
+        }
+
+        $attendee_id = intval($_POST['attendee_id']);
+        if (!wp_verify_nonce($_POST['_wpnonce'], 'update_attendee_' . $attendee_id)) {
+            wp_die('Security check failed');
+        }
+
+        $attendeeDb = new AttendeeDatabase();
+        $current_attendee = $attendeeDb->get_attendee($attendee_id);
+        
+        if (!$current_attendee) {
+            wp_die('Attendee not found');
+        }
+
+        // Only update editable fields
+        $data = [
+            'home_state' => sanitize_text_field($_POST['home_state']),
+            'nu_student' => sanitize_text_field($_POST['nu_student']),
+            'nu_grad_year' => sanitize_text_field($_POST['nu_grad_year']),
+            'primary_school' => sanitize_text_field($_POST['primary_school']),
+            'primary_major' => sanitize_text_field($_POST['primary_major']),
+        ];
+
+        $updated = $attendeeDb->update_attendee($attendee_id, $data);
+
+        wp_redirect(admin_url('admin.php?page=attendee-records&updated=' . ($updated !== false ? 1 : 0)));
+        exit;
     }
 
     /**

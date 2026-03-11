@@ -115,6 +115,30 @@ class AttendeeDatabase {
         return $wpdb->get_results($sql);
     }
 
+    public function get_attendee($id) {
+        global $wpdb;
+        $table_name = $wpdb->prefix . 'attendee_records';
+        return $wpdb->get_row($wpdb->prepare("SELECT * FROM $table_name WHERE id = %d", intval($id)));
+    }
+
+    public function update_attendee($id, $data) {
+        global $wpdb;
+        $table_name = $wpdb->prefix . 'attendee_records';
+        
+        // Only update fields that are provided in the data array
+        $updateData = [];
+        foreach ($data as $key => $value) {
+            $updateData[$key] = $value;
+        }
+        
+        // If no data to update, return false
+        if (empty($updateData)) {
+            return false;
+        }
+        
+        return $wpdb->update($table_name, $updateData, ['id' => intval($id)], null, ['%d']);
+    }
+
     public function delete_all_attendees() {
         global $wpdb;
         $table_name = $wpdb->prefix . 'attendee_records';
