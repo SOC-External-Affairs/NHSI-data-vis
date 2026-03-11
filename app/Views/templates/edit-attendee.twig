@@ -1,0 +1,44 @@
+<div class="wrap">
+    <h1>Edit Attendee Record</h1>
+
+    <form method="post" action="{{ update_url }}">
+        {{ nonce|raw }}
+        <input type="hidden" name="action" value="update_attendee">
+        <input type="hidden" name="attendee_id" value="{{ attendee.id }}">
+
+        <table class="form-table">
+            <tbody>
+                <tr>
+                    <th scope="row"><label for="home_state">Home State</label></th>
+                    <td><input type="text" name="home_state" id="home_state" value="{{ attendee.home_state|e('html_attr') }}" class="regular-text"></td>
+                </tr>
+                <tr>
+                    <th scope="row"><label for="nu_student">NU Student</label></th>
+                    <td>
+                        <select name="nu_student" id="nu_student">
+                            <option value="yes" {{ attendee.nu_student|lower == 'yes' ? 'selected' : '' }}>Yes</option>
+                            <option value="no" {{ attendee.nu_student|lower == 'no' ? 'selected' : '' }}>No</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <th scope="row"><label for="nu_grad_year">NU Grad Year</label></th>
+                    <td><input type="text" name="nu_grad_year" id="nu_grad_year" value="{{ attendee.nu_grad_year|e('html_attr') }}" class="regular-text" placeholder="YYYY"></td>
+                </tr>
+                <tr>
+                    <th scope="row"><label for="primary_school">Primary School</label></th>
+                    <td><input type="text" name="primary_school" id="primary_school" value="{{ attendee.primary_school|e('html_attr') }}" class="regular-text"></td>
+                </tr>
+                <tr>
+                    <th scope="row"><label for="primary_major">Primary Major</label></th>
+                    <td><input type="text" name="primary_major" id="primary_major" value="{{ attendee.primary_major|e('html_attr') }}" class="regular-text"></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <p class="submit">
+            <input type="submit" name="submit" id="submit" class="button button-primary" value="Save Changes">
+            <a href="?page=attendee-records" class="button">Cancel</a>
+        </p>
+    </form>
+</div>
